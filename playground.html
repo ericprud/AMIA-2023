@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <title>AMIA Tutorial Playground</title>
+    <style>
+      .error { background-color: #e77; }
+
+      .input {
+          padding: 0 2em;
+          & h2 { margin: 0 -1em; }
+          & textarea { width: 100%; height: 40%; display: block; }
+      }
+      .header {
+          display: flex;
+          & h1 { margin: 0; }
+      }
+      #manifest {
+          display: flex;
+          flex-wrap: wrap;
+          margin: 0;
+          & li {
+              margin-right: 2em;
+              /* list-style-type: none; */
+              & button {
+                  font-size: .7em;
+                  padding: 0em 2ex;
+                  border-radius: 0.5em;
+                  border: thin solid #000;
+                  cursor: pointer;
+                  box-shadow: 0.1em 0px 1em rgba(255, 255, 255, 0.9) inset;
+              }
+          }
+      }
+
+      .panes {
+          height: 100%;
+          display: flex;
+          & section {
+              flex: 0 0 45%;
+          }
+      }
+    </style>
+    <script src="playground/playground"></script>
+    <script src="playground/build/stuff-bundle.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+  </head>
+  <body>
+    <div class="header">
+      <h1>AMIA Tutorial Playground</h1>
+      <ul id="manifest"></ul>
+    </div>
+    <div class="panes">
+      <section id="data" class="input">
+        <h2>Input Data</h2>
+        <label>Data language
+          <select>
+            <option value="-none-">-none-</option>
+            <option value="Turtle">Turtle</option>
+            <option value="JSON">JSON</option>
+          </select>
+        </label>
+        <textarea></textarea>
+        <div id="text"/>
+      </section>
+      <section id="query" class="input">
+        <h2>SPARQL Query</h2>
+        <label>Query language
+          <select>
+            <option value="SPARQL">SPARQL</option>
+          </select>
+        </label>
+        <textarea></textarea>
+        <div id="results"/>
+      </section>
+    </div>
+  </body>
+</html>
