@@ -11,6 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@comunica/query-sparql-rdfjs": "^2.9.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {

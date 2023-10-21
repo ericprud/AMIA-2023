@@ -40,8 +40,10 @@ class Playground {
     const manifestKeyToInput = {
       data: '#data textarea',
       dataFormat: '#data select',
+      sparqlQuery: '#query textarea',
     }
     for (const [manifestKey, selector] of Object.entries(manifestKeyToInput)) {
+      $(selector).empty();
       const derefMe = `${manifestKey}URL`;
       if (derefMe in manifestEntry) {
         const url = manifestEntry[derefMe];
@@ -59,6 +61,41 @@ class Playground {
     $('#text').empty();
     if ('text' in manifestEntry)
       $('#text').get(0).innerHTML = manifestEntry.text;
+    if ($('#query textarea')) {
+      $('#query button')
+        .prop('disabled', false)
+        .on('click', async evt => {
+          $('#results').empty();
+          const db = new N3.Store();
+          const parser = new N3.Parser({baseIRI: location.href})
+          db.addQuads(parser.parse($('#data textarea').val()));
+          const myEngine = new Comunica.QueryEngine();
+          const query = $('#query textarea').val();
+          const typedStream = await myEngine.queryBindings(query, {sources: [db]});
+          const typed = (await typedStream.toArray()).map(
+            b => Object.fromEntries(b.entries)
+          );
+          if (typed.length === 0) {
+            $('#results').text('no results');
+          } else {
+            $('#results').text(`${typed.length} results`);
+            const variables = Object.keys(typed[0]); // TODO: look for more elegant solution
+            const heading = $('<tr/>').append('<th/>').text('#');
+            heading.append(variables.map(v => $('<th/>').text(v)));
+            const table = $('<table/>').append($('<thead/>').append(heading));
+            $('#results').append(table);
+            for (const rowNo in typed) {
+              const row = typed[rowNo];
+              table.append(
+                $('<tr/>').append([ $('<td/>').text('' + rowNo) ].concat(
+                  variables.map(v => $('<td/>').text(row[v].value))
+                ) )
+              )
+            }
+          }
+          console.log(typed);
+        })
+    }
   }
 
   async getBody (url, what) {

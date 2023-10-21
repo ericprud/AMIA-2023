@@ -42,6 +42,8 @@
     <script src="playground/playground"></script>
     <script src="playground/build/stuff-bundle.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"></script>
+    <script src="https://unpkg.com/n3/browser/n3.min.js"></script>
+    <script src="http://rdf.js.org/comunica-browser/versions/v2/engines/query-sparql/comunica-browser.js"></script>
   </head>
   <body>
     <div class="header">
@@ -63,11 +65,7 @@
       </section>
       <section id="query" class="input">
         <h2>SPARQL Query</h2>
-        <label>Query language
-          <select>
-            <option value="SPARQL">SPARQL</option>
-          </select>
-        </label>
+        <button disabled>Query</button>
         <textarea></textarea>
         <div id="results"/>
       </section>
