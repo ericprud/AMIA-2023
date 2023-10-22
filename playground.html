@@ -11,9 +11,9 @@
       }
       .header {
           display: flex;
-          & h1 { margin: 0; }
+          & h1, h2 { margin: 0; white-space: nowrap; }
       }
-      #manifest {
+      .manifest {
           display: flex;
           flex-wrap: wrap;
           margin: 0;
@@ -48,7 +48,7 @@
   <body>
     <div class="header">
       <h1>AMIA Tutorial Playground</h1>
-      <ul id="manifest"></ul>
+      <ul class="manifest"></ul>
     </div>
     <div class="panes">
       <section id="data" class="input">
@@ -64,7 +64,10 @@
         <div id="text"/>
       </section>
       <section id="query" class="input">
-        <h2>SPARQL Query</h2>
+        <div class="header">
+          <h1>SPARQL Query</h1>
+          <ul class="manifest"></ul>
+        </div>
         <button disabled>Query</button>
         <textarea></textarea>
         <div id="results"/>
