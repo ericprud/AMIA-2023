@@ -23,7 +23,7 @@ class Playground {
       const body = await this.getBody(manifestURL, 'manifest');
       now = `parse manifest ${body}`;
       const manifest = Stuff.JsYaml.load(body);
-      this.paintManifest(manifest, $('body > .header'), this.headerManifestSelect.bind(this));
+      this.paintManifest(manifest, $('body > .header'), this.headerManifestSelect.bind(this), new URL(manifestURL, location));
       console.log(`Manifest <${manifestURL}>:`, manifest)
     } catch (e) {
       console.error(e);
@@ -32,22 +32,22 @@ class Playground {
     }
   }
 
-  paintManifest (manifest, from, action) {
+  paintManifest (manifest, from, action, base) {
     from.find('.manifest').append(
       manifest.map(item => $(`<li/>`).append(
         $(`<button/>`)
           .text(item.label)
-          .on('click', evt => action(evt, item))
+          .on('click', evt => action(evt, item, base))
       ))
     )
   }
 
-  async genericManifestSelect (manifestEntry, fieldToSelector) {
+  async genericManifestSelect (manifestEntry, base, fieldToSelector) {
     for (const [manifestKey, selector] of Object.entries(fieldToSelector)) {
       // $(selector).empty();
       const derefMe = `${manifestKey}URL`;
       if (derefMe in manifestEntry) {
-        const url = manifestEntry[derefMe];
+        const url = new URL(manifestEntry[derefMe], base);
         let body = null;
         try {
           body = await this.getBody(url, manifestKey);
@@ -61,8 +61,8 @@ class Playground {
     }
   }
 
-  async headerManifestSelect (evt, manifestEntry) {
-    await this.genericManifestSelect(manifestEntry, {
+  async headerManifestSelect (evt, manifestEntry, base) {
+    await this.genericManifestSelect(manifestEntry, base, {
       data: '#data textarea',
       dataFormat: '#data select',
       sparqlQuery: '#query textarea',
@@ -90,12 +90,12 @@ SELECT ?id ?div {
         .on('click', this.renderQueryResults.bind(this))
     }
     if (manifestEntry.sparqlQueries) {
-      this.paintManifest(manifestEntry.sparqlQueries, $('#query > .header'), this.queryManifestSelect.bind(this));
+      this.paintManifest(manifestEntry.sparqlQueries, $('#query > .header'), this.queryManifestSelect.bind(this), base);
     }
   }
 
-  async queryManifestSelect (evt, manifestEntry) {
-    await this.genericManifestSelect(manifestEntry, {
+  async queryManifestSelect (evt, manifestEntry, base) {
+    await this.genericManifestSelect(manifestEntry, base, {
       sparqlQuery: '#query textarea',
     });
     if (!!$('#query textarea').val()) {

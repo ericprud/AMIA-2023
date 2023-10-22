@@ -1,7 +1,7 @@
 ---
 - label: Patient (R5)
   dataFormat: Turtle
-  dataURL: playground/manifests/patient-example.ttl
+  dataURL: patient-example.ttl
   resourceType: 'Patient'
   sparqlQueries:
     - label: family and given names
