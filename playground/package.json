@@ -12,7 +12,11 @@
   "license": "ISC",
   "dependencies": {
     "@comunica/query-sparql-rdfjs": "^2.9.0",
-    "js-yaml": "^4.1.0"
+    "@shexjs/loader": "^1.0.0-alpha.26",
+    "@shexjs/neighborhood-rdfjs": "^1.0.0-alpha.25",
+    "@shexjs/validator": "^1.0.0-alpha.26",
+    "js-yaml": "^4.1.0",
+    "n3": "^1.17.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

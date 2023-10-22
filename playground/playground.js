@@ -15,6 +15,7 @@ class Playground {
 
   async onLoad () {
     const params = new URLSearchParams(location.search);
+    this.setupEvents();
     const manifestURL = params.get(MANIFEST.param) || MANIFEST.default;
     let now = '';
     try {
@@ -30,6 +31,16 @@ class Playground {
       document.querySelector('body').classList.add('error');
       // alert(e);
     }
+  }
+
+  setupEvents () {
+    $('#right select').on('change', evt => {
+      // Reveal one right pane depending on select.
+      $('#right select option').get().map(elt => {
+        const setMe = $('#right').find('.' + elt.value);
+        elt.selected ? setMe.show() : setMe.hide();
+      })
+    });
   }
 
   paintManifest (manifest, from, action, base) {
@@ -55,8 +66,10 @@ class Playground {
           body = e;
         }
         $(selector).val(body);
+        $(selector).data('url', url);
       } else {
         $(selector).val(manifestEntry[manifestKey]);
+        $(selector).data('url', base);
       }
     }
   }
@@ -65,43 +78,48 @@ class Playground {
     await this.genericManifestSelect(manifestEntry, base, {
       data: '#data textarea',
       dataFormat: '#data select',
-      sparqlQuery: '#query textarea',
+      // sparqlQuery: '#right textarea.query',
     });
     $('#text').empty();
-    // if ('text' in manifestEntry)
-    //   $('#text').get(0).innerHTML = manifestEntry.text;
     try {
       const textStuff = await this.expectOneQueryResult(`PREFIX fhir: <http://hl7.org/fhir/>
-SELECT ?id ?div {
+SELECT ?resource ?id ?div {
   ?resource fhir:nodeRole fhir:treeRoot ;
     fhir:id [ fhir:v ?id ] ;
     fhir:text [ fhir:div ?div ] }`);
-      if (textStuff)
+      if (textStuff) {
         $('#text').get(0).innerHTML = textStuff.div.value;
+        this.resource = textStuff.resource;
+        this.id = textStuff.id;
+      }
     } catch (e) {
-      $('#text').append(
+      $('#text').empty().append(
         $('<p/>', {"class": "error"}).text(e.message)
       );
     }
 
-    if (!!$('#query textarea').val()) {
-      $('#query button')
+    if (!!$('#right textarea:visible').val()) {
+      $('#right .run')
         .prop('disabled', false)
-        .on('click', this.renderQueryResults.bind(this))
+        .on('click', this.rightPaneRunHandler.bind(this))
     }
     if (manifestEntry.sparqlQueries) {
-      this.paintManifest(manifestEntry.sparqlQueries, $('#query > .header'), this.queryManifestSelect.bind(this), base);
+      this.paintManifest(manifestEntry.sparqlQueries, $('#right > .header'), this.queryManifestSelect.bind(this), base);
     }
   }
 
   async queryManifestSelect (evt, manifestEntry, base) {
     await this.genericManifestSelect(manifestEntry, base, {
-      sparqlQuery: '#query textarea',
+      action: '#right .header select',
+      sparqlQuery: '#right textarea.query',
+      shexSchema: '#right textarea.validate',
     });
-    if (!!$('#query textarea').val()) {
-      $('#query button')
+    $('#right select').change();
+    if (!!$('#right textarea:visible').val()) {
+      $('#right .run')
         .prop('disabled', false)
-        .on('click', this.renderQueryResults.bind(this))
+        .off()
+        .on('click', this.rightPaneRunHandler.bind(this))
     }
   }
 
@@ -137,19 +155,36 @@ SELECT ?id ?div {
     return rows;
   }
 
+  async rightPaneRunHandler (evt) {
+    $('#runResults').empty();
+    const reqStr = $('#right select').val();
+    try {
+      switch (reqStr) {
+      case 'query': return await this.renderQueryResults(evt);
+      case 'validate': return await this.renderValidationResults(evt);
+      default: throw Error(`unknown run request: ${reqStr}`);
+      }
+    } catch (e) {
+      console.error(e);
+      $('#runResults').append(
+        $('<p/>', {"class": "error"}).text(`failure trying to ${reqStr}:`),
+        $('<pre/>', {"class": "error"}).text(e.stack),
+      );
+    }
+  }
+
   async renderQueryResults (evt) {
-    $('#queryResults').empty();
     const db = await this.parseDataPane();
-    const typed = await this.executeQuery(db, $('#query textarea').val());
+    const typed = await this.executeQuery(db, $('#right textarea.query').val());
     if (typed.length === 0) {
-      $('#queryResults').text('no results');
+      $('#runResults').text('no results');
     } else {
-      $('#queryResults').text(`${typed.length} results`);
+      $('#runResults').text(`${typed.length} results`);
       const variables = Object.keys(typed[0]); // TODO: look for more elegant solution
       const heading = $('<tr/>').append('<th/>').text('#');
       heading.append(variables.map(v => $('<th/>').text(v)));
       const table = $('<table/>').append($('<thead/>').append(heading));
-      $('#queryResults').append(table);
+      $('#runResults').append(table);
       for (const rowNo in typed) {
         const row = typed[rowNo];
         table.append(
@@ -160,6 +195,76 @@ SELECT ?id ?div {
       }
     }
     console.log(typed);
+  }
+
+  async renderValidationResults (evt) {
+    const shExLoader = Stuff.ShExLoader({fetch: window.fetch.bind(window), rdfjs: N3, jsonld: null});
+    const db = await this.parseDataPane();
+    const statusElt = $('#runResults');
+
+    class ProgressLoadController extends shExLoader.ResourceLoadControler {
+      constructor (statusElt, src) {
+        super(src);
+        this.statusElt = statusElt;
+      }
+      add (promise) {
+        const index = this.toLoad.length;
+        super.add(promise.then(ret => {
+          const msg = `Loaded ${index} of ${this.schemasSeen.length} imports: ${ret.url}`;
+          this.statusElt.empty().append('<p/>').text(msg);
+          console.log(msg);
+          return ret;
+        }));
+      }
+      allLoaded () {
+        return super.allLoaded().then(x => {
+          const msg = `Loaded ${this.toLoad.length} imports.\n`;
+          this.statusElt.empty().append('<p/>').text(msg);
+          console.log(msg);
+          return x;
+        });
+      }
+    }
+
+    statusElt.empty().append('<p/>').text('loading schema');
+    const loaded = await shExLoader.load(
+      {shexc: [{
+        text: $('#right textarea.validate').val(),
+        url: $('#right textarea.validate').data('url').href
+      }]},
+      {turtle: [{
+        text: $('#data textarea').val(),
+        url: $('#data textarea').data('url').href
+      }]},
+      {
+        collisionPolicy: (type, left, right) => {
+          const lStr = JSON.stringify(left);
+          const rStr = JSON.stringify(right);
+          if (lStr === rStr) {
+            return false; // keep left/old assignment
+          }
+          throw new Error(`Conflicing definitions: ${lStr} !== ${rStr}`);
+        },
+        skipCycleCheck: true,
+        // loadController: new ProgressLoadController(statusElt, [$('#right textarea.validate').data('url').href]),
+      }
+    );
+    const validator = new Stuff.ShExValidator.ShExValidator(
+      loaded.schema,
+      Stuff.RdfJsDb.ctor(loaded.data),
+      {
+        results: "api",
+        // regexModule: ShExWebApp[$("#regexpEngine").val()],
+        // ignoreClosed: $("#ignoreClosed").is(":checked"),
+      });
+    console.log(loaded, validator);
+    statusElt.empty().append('<p/>').text('validating');
+    const res = validator.validateNodeShapePair(
+      this.resource, // node
+      Stuff.ShExValidator.ShExValidator.Start, // shape
+    );
+    console.log('Validation results:', res);
+    statusElt.empty().append($('<pre/>', {"class": !!res.errors ? 'error' : 'success'}).text(JSON.stringify(res, null, 2)));
   }
 }
 

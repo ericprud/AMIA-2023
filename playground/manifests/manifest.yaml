@@ -5,6 +5,7 @@
   resourceType: 'Patient'
   sparqlQueries:
     - label: family and given names
+      action: query
       sparqlQuery: |
         PREFIX fhir: <http://hl7.org/fhir/>
         PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -20,7 +21,9 @@
               fhir:given [ rdf:rest*/rdf:first [ fhir:v ?given ] ]
             ] ]
         }
-    - label: text
+
+    - label: narrative
+      action: query
       sparqlQuery: |
         PREFIX fhir: <http://hl7.org/fhir/>
 
@@ -31,6 +34,58 @@
               fhir:div ?div
             ] .
         }
+
+    - label: validate as Patient
+      action: validate
+      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
+
+    - label: validate as Observation
+      action: validate
+      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
+
+- label: Patient (R5) JSON
+  dataFormat: Turtle
+  dataURL: patient-example.json
+  resourceType: 'Patient'
+  sparqlQueries:
+    - label: family and given names
+      action: query
+      sparqlQuery: |
+        PREFIX fhir: <http://hl7.org/fhir/>
+        PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+        PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+       
+        SELECT ?id ?active ?family ?given {
+          ?resource a fhir:Patient ;
+            fhir:id [ fhir:v ?id ] ;
+            fhir:active [ fhir:v ?active ] ;
+            fhir:name [ rdf:rest*/rdf:first [
+              fhir:use [ fhir:v "official" ] ;
+              fhir:family [ fhir:v ?family ] ;
+              fhir:given [ rdf:rest*/rdf:first [ fhir:v ?given ] ]
+            ] ]
+        }
+
+    - label: narrative
+      action: query
+      sparqlQuery: |
+        PREFIX fhir: <http://hl7.org/fhir/>
+
+        SELECT ?id ?div {
+          ?resource fhir:nodeRole fhir:treeRoot ;
+            fhir:id [ fhir:v ?id ] ;
+            fhir:text [
+              fhir:div ?div
+            ] .
+        }
+
+    - label: validate as Patient
+      action: validate
+      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
+
+    - label: validate as Observation
+      action: validate
+      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
 
 - label: foo
 - label: bar

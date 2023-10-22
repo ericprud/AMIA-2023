@@ -104,10 +104,10 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
        ] ;
        fhir:given ( [ fhir:v "Bénédicte" ] )
      ] ;
-     fhir:telecom ( [
-       fhir:system [ fhir:v "phone" ] ;
-       fhir:value [ fhir:v "+33 (237) 998327" ]
-     ] ) ;
+     # fhir:telecom ( [
+     #   fhir:system [ fhir:v "phone" ] ;
+     #   fhir:value [ fhir:v "+33 (237) 998327" ]
+     # ] ) ;
      fhir:address [
        fhir:use [ fhir:v "home" ] ;
        fhir:type [ fhir:v "both" ] ;

@@ -3,6 +3,7 @@
     <title>AMIA Tutorial Playground</title>
     <style>
       .error { background-color: #e77; }
+      .success { background-color: #7e7; }
 
       .input {
           padding: 0 2em;
@@ -12,6 +13,12 @@
       .header {
           display: flex;
           & h1, h2 { margin: 0; white-space: nowrap; }
+          & select {
+              font-size: 1.5em;
+              font-weight: bold;
+              border: 0;
+              margin: 0;
+          }
       }
       .manifest {
           display: flex;
@@ -39,7 +46,7 @@
           }
       }
 
-      #queryResults td {
+      #runResults td {
           vertical-align: top;
       }
     </style>
@@ -67,14 +74,18 @@
         <textarea spellcheck="false"></textarea>
         <div id="text"/>
       </section>
-      <section id="query" class="input">
+      <section id="right" class="input">
         <div class="header">
-          <h1>SPARQL Query</h1>
+          <select>
+            <option value="query">SPARQL Query</option>
+            <option value="validate">ShEx Validation</option>
+          </select>
           <ul class="manifest"></ul>
         </div>
-        <button disabled>Query</button>
-        <textarea spellcheck="false"></textarea>
-        <div id="queryResults"/>
+        <button class="run" disabled>Run</button>
+        <textarea class="query" spellcheck="false"></textarea>
+        <textarea class="validate" spellcheck="false" style="display: none;"></textarea>
+        <div id="runResults"/>
       </section>
     </div>
   </body>
