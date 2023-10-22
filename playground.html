@@ -38,6 +38,10 @@
               flex: 0 0 45%;
           }
       }
+
+      #queryResults td {
+          vertical-align: top;
+      }
     </style>
     <script src="playground/playground"></script>
     <script src="playground/build/stuff-bundle.js"></script>
@@ -60,7 +64,7 @@
             <option value="JSON">JSON</option>
           </select>
         </label>
-        <textarea></textarea>
+        <textarea spellcheck="false"></textarea>
         <div id="text"/>
       </section>
       <section id="query" class="input">
@@ -69,8 +73,8 @@
           <ul class="manifest"></ul>
         </div>
         <button disabled>Query</button>
-        <textarea></textarea>
-        <div id="results"/>
+        <textarea spellcheck="false"></textarea>
+        <div id="queryResults"/>
       </section>
     </div>
   </body>
