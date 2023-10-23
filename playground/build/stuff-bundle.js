@@ -3865,351 +3865,6 @@
 	jsYaml.safeLoadAll         = renamed('safeLoadAll', 'loadAll');
 	jsYaml.safeDump            = renamed('safeDump', 'dump');
 
-	var rdfDataFactory$1 = {};
-
-	var BlankNode$3 = {};
-
-	Object.defineProperty(BlankNode$3, "__esModule", { value: true });
-	BlankNode$3.BlankNode = void 0;
-	/**
-	 * A term that represents an RDF blank node with a label.
-	 */
-	let BlankNode$2 = class BlankNode {
-	    constructor(value) {
-	        this.termType = 'BlankNode';
-	        this.value = value;
-	    }
-	    equals(other) {
-	        return !!other && other.termType === 'BlankNode' && other.value === this.value;
-	    }
-	};
-	BlankNode$3.BlankNode = BlankNode$2;
-
-	var DataFactory$3 = {};
-
-	var DefaultGraph$3 = {};
-
-	Object.defineProperty(DefaultGraph$3, "__esModule", { value: true });
-	DefaultGraph$3.DefaultGraph = void 0;
-	/**
-	 * A singleton term instance that represents the default graph.
-	 * It's only allowed to assign a DefaultGraph to the .graph property of a Quad.
-	 */
-	let DefaultGraph$2 = class DefaultGraph {
-	    constructor() {
-	        this.termType = 'DefaultGraph';
-	        this.value = '';
-	        // Private constructor
-	    }
-	    equals(other) {
-	        return !!other && other.termType === 'DefaultGraph';
-	    }
-	};
-	DefaultGraph$3.DefaultGraph = DefaultGraph$2;
-	DefaultGraph$2.INSTANCE = new DefaultGraph$2();
-
-	var Literal$3 = {};
-
-	var NamedNode$3 = {};
-
-	Object.defineProperty(NamedNode$3, "__esModule", { value: true });
-	NamedNode$3.NamedNode = void 0;
-	/**
-	 * A term that contains an IRI.
-	 */
-	let NamedNode$2 = class NamedNode {
-	    constructor(value) {
-	        this.termType = 'NamedNode';
-	        this.value = value;
-	    }
-	    equals(other) {
-	        return !!other && other.termType === 'NamedNode' && other.value === this.value;
-	    }
-	};
-	NamedNode$3.NamedNode = NamedNode$2;
-
-	Object.defineProperty(Literal$3, "__esModule", { value: true });
-	Literal$3.Literal = void 0;
-	const NamedNode_1$3 = NamedNode$3;
-	/**
-	 * A term that represents an RDF literal, containing a string with an optional language tag or datatype.
-	 */
-	let Literal$2 = class Literal {
-	    constructor(value, languageOrDatatype) {
-	        this.termType = 'Literal';
-	        this.value = value;
-	        if (typeof languageOrDatatype === 'string') {
-	            this.language = languageOrDatatype;
-	            this.datatype = Literal.RDF_LANGUAGE_STRING;
-	        }
-	        else if (languageOrDatatype) {
-	            this.language = '';
-	            this.datatype = languageOrDatatype;
-	        }
-	        else {
-	            this.language = '';
-	            this.datatype = Literal.XSD_STRING;
-	        }
-	    }
-	    equals(other) {
-	        return !!other && other.termType === 'Literal' && other.value === this.value &&
-	            other.language === this.language && this.datatype.equals(other.datatype);
-	    }
-	};
-	Literal$3.Literal = Literal$2;
-	Literal$2.RDF_LANGUAGE_STRING = new NamedNode_1$3.NamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#langString');
-	Literal$2.XSD_STRING = new NamedNode_1$3.NamedNode('http://www.w3.org/2001/XMLSchema#string');
-
-	var Quad$3 = {};
-
-	Object.defineProperty(Quad$3, "__esModule", { value: true });
-	Quad$3.Quad = void 0;
-	/**
-	 * An instance of DefaultGraph represents the default graph.
-	 * It's only allowed to assign a DefaultGraph to the .graph property of a Quad.
-	 */
-	let Quad$2 = class Quad {
-	    constructor(subject, predicate, object, graph) {
-	        this.termType = 'Quad';
-	        this.value = '';
-	        this.subject = subject;
-	        this.predicate = predicate;
-	        this.object = object;
-	        this.graph = graph;
-	    }
-	    equals(other) {
-	        // `|| !other.termType` is for backwards-compatibility with old factories without RDF* support.
-	        return !!other && (other.termType === 'Quad' || !other.termType) &&
-	            this.subject.equals(other.subject) &&
-	            this.predicate.equals(other.predicate) &&
-	            this.object.equals(other.object) &&
-	            this.graph.equals(other.graph);
-	    }
-	};
-	Quad$3.Quad = Quad$2;
-
-	var Variable$3 = {};
-
-	Object.defineProperty(Variable$3, "__esModule", { value: true });
-	Variable$3.Variable = void 0;
-	/**
-	 * A term that represents a variable.
-	 */
-	let Variable$2 = class Variable {
-	    constructor(value) {
-	        this.termType = 'Variable';
-	        this.value = value;
-	    }
-	    equals(other) {
-	        return !!other && other.termType === 'Variable' && other.value === this.value;
-	    }
-	};
-	Variable$3.Variable = Variable$2;
-
-	Object.defineProperty(DataFactory$3, "__esModule", { value: true });
-	DataFactory$3.DataFactory = void 0;
-	const BlankNode_1$1 = BlankNode$3;
-	const DefaultGraph_1$1 = DefaultGraph$3;
-	const Literal_1$1 = Literal$3;
-	const NamedNode_1$2 = NamedNode$3;
-	const Quad_1$1 = Quad$3;
-	const Variable_1$1 = Variable$3;
-	let dataFactoryCounter$1 = 0;
-	/**
-	 * A factory for instantiating RDF terms and quads.
-	 */
-	let DataFactory$2 = class DataFactory {
-	    constructor(options) {
-	        this.blankNodeCounter = 0;
-	        options = options || {};
-	        this.blankNodePrefix = options.blankNodePrefix || `df_${dataFactoryCounter$1++}_`;
-	    }
-	    /**
-	     * @param value The IRI for the named node.
-	     * @return A new instance of NamedNode.
-	     * @see NamedNode
-	     */
-	    namedNode(value) {
-	        return new NamedNode_1$2.NamedNode(value);
-	    }
-	    /**
-	     * @param value The optional blank node identifier.
-	     * @return A new instance of BlankNode.
-	     *         If the `value` parameter is undefined a new identifier
-	     *         for the blank node is generated for each call.
-	     * @see BlankNode
-	     */
-	    blankNode(value) {
-	        return new BlankNode_1$1.BlankNode(value || `${this.blankNodePrefix}${this.blankNodeCounter++}`);
-	    }
-	    /**
-	     * @param value              The literal value.
-	     * @param languageOrDatatype The optional language or datatype.
-	     *                           If `languageOrDatatype` is a NamedNode,
-	     *                           then it is used for the value of `NamedNode.datatype`.
-	     *                           Otherwise `languageOrDatatype` is used for the value
-	     *                           of `NamedNode.language`.
-	     * @return A new instance of Literal.
-	     * @see Literal
-	     */
-	    literal(value, languageOrDatatype) {
-	        return new Literal_1$1.Literal(value, languageOrDatatype);
-	    }
-	    /**
-	     * This method is optional.
-	     * @param value The variable name
-	     * @return A new instance of Variable.
-	     * @see Variable
-	     */
-	    variable(value) {
-	        return new Variable_1$1.Variable(value);
-	    }
-	    /**
-	     * @return An instance of DefaultGraph.
-	     */
-	    defaultGraph() {
-	        return DefaultGraph_1$1.DefaultGraph.INSTANCE;
-	    }
-	    /**
-	     * @param subject   The quad subject term.
-	     * @param predicate The quad predicate term.
-	     * @param object    The quad object term.
-	     * @param graph     The quad graph term.
-	     * @return A new instance of Quad.
-	     * @see Quad
-	     */
-	    quad(subject, predicate, object, graph) {
-	        return new Quad_1$1.Quad(subject, predicate, object, graph || this.defaultGraph());
-	    }
-	    /**
-	     * Create a deep copy of the given term using this data factory.
-	     * @param original An RDF term.
-	     * @return A deep copy of the given term.
-	     */
-	    fromTerm(original) {
-	        // TODO: remove nasty any casts when this TS bug has been fixed:
-	        //  https://github.com/microsoft/TypeScript/issues/26933
-	        switch (original.termType) {
-	            case 'NamedNode':
-	                return this.namedNode(original.value);
-	            case 'BlankNode':
-	                return this.blankNode(original.value);
-	            case 'Literal':
-	                if (original.language) {
-	                    return this.literal(original.value, original.language);
-	                }
-	                if (!original.datatype.equals(Literal_1$1.Literal.XSD_STRING)) {
-	                    return this.literal(original.value, this.fromTerm(original.datatype));
-	                }
-	                return this.literal(original.value);
-	            case 'Variable':
-	                return this.variable(original.value);
-	            case 'DefaultGraph':
-	                return this.defaultGraph();
-	            case 'Quad':
-	                return this.quad(this.fromTerm(original.subject), this.fromTerm(original.predicate), this.fromTerm(original.object), this.fromTerm(original.graph));
-	        }
-	    }
-	    /**
-	     * Create a deep copy of the given quad using this data factory.
-	     * @param original An RDF quad.
-	     * @return A deep copy of the given quad.
-	     */
-	    fromQuad(original) {
-	        return this.fromTerm(original);
-	    }
-	    /**
-	     * Reset the internal blank node counter.
-	     */
-	    resetBlankNodeCounter() {
-	        this.blankNodeCounter = 0;
-	    }
-	};
-	DataFactory$3.DataFactory = DataFactory$2;
-
-	(function (exports) {
-		var __createBinding = (commonjsGlobal && commonjsGlobal.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-		    if (k2 === undefined) k2 = k;
-		    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-		}) : (function(o, m, k, k2) {
-		    if (k2 === undefined) k2 = k;
-		    o[k2] = m[k];
-		}));
-		var __exportStar = (commonjsGlobal && commonjsGlobal.__exportStar) || function(m, exports) {
-		    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
-		};
-		Object.defineProperty(exports, "__esModule", { value: true });
-		__exportStar(BlankNode$3, exports);
-		__exportStar(DataFactory$3, exports);
-		__exportStar(DefaultGraph$3, exports);
-		__exportStar(Literal$3, exports);
-		__exportStar(NamedNode$3, exports);
-		__exportStar(Quad$3, exports);
-		__exportStar(Variable$3, exports);
-		
-	} (rdfDataFactory$1));
-
-	function commonjsRequire(path) {
-		throw new Error('Could not dynamically require "' + path + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
-	}
-
-	var shexLoader = {exports: {}};
-
-	var shexUtil = {exports: {}};
-
-	var shexTerm = {};
-
-	var relativizeUrl = {exports: {}};
-
-	(function (module, exports) {
-		class RelativizeUrl {
-		  static components = [
-		    {name: 'protocol', write: u => u.protocol },
-		    {name: 'hostname', write: u => '//' + u.hostname },
-		    {name: 'port', write: u => ':' + u.port },
-		    {name: 'pathname', write: (u, frm, relativize) => {
-		      if (!relativize) return u.pathname;
-		      const f = frm.pathname.split('/').slice(1);
-		      const t = u.pathname.split('/').slice(1);
-		      const maxDepth = Math.max(f.length, t.length);
-
-		      let start = 0;
-		      while(start < maxDepth && f[start] === t[start]) ++start;
-		      const rel = f.slice(start+1).map(c => '..').concat(t.slice(start)).join('/');
-		      return rel.length <= u.pathname.length ? rel : u.pathname
-		    }},
-		    {name: 'search', write: u => u.search },
-		    {name: 'hash', write: u => u.hash},
-		  ];
-
-		  constructor (base, options) { this.base = base; this.options = options; }
-
-		  relate (rel) { return RelativizeUrl.relativize(rel, this.base, this.options); }
-
-		  static relativize (rel, base, opts = {}) { // opts not yet used
-		    const from = new URL(base);
-		    const to = new URL(rel, from);
-		    let ret = '';
-		    for (let component of RelativizeUrl.components) {
-		      if (ret) { // force abs path if e.g. host was diffferent
-		        if (to[component.name]) {
-		          ret += component.write(to, from, false);
-		        }
-		      } else if (from[component.name] !== to[component.name]) {
-		        ret = component.write(to, from, true);
-		      }
-		    }
-		    return ret;
-		  }
-		}
-
-		/* istanbul ignore next */
-		if (typeof commonjsRequire !== "undefined" && 'object' !== "undefined")
-		  module.exports = RelativizeUrl; 
-	} (relativizeUrl));
-
-	var relativizeUrlExports = relativizeUrl.exports;
-
 	var rdfDataFactory = {};
 
 	var BlankNode$1 = {};
@@ -4298,7 +3953,7 @@
 	    }
 	    equals(other) {
 	        return !!other && other.termType === 'Literal' && other.value === this.value &&
-	            other.language === this.language && other.datatype.equals(this.datatype);
+	            other.language === this.language && this.datatype.equals(other.datatype);
 	    }
 	}
 	Literal$1.Literal = Literal;
@@ -4493,6 +4148,67 @@
 		__exportStar(Variable$1, exports);
 		
 	} (rdfDataFactory));
+
+	function commonjsRequire(path) {
+		throw new Error('Could not dynamically require "' + path + '". Please configure the dynamicRequireTargets or/and ignoreDynamicRequires option of @rollup/plugin-commonjs appropriately for this require call to work.');
+	}
+
+	var shexLoader = {exports: {}};
+
+	var shexUtil = {exports: {}};
+
+	var shexTerm = {};
+
+	var relativizeUrl = {exports: {}};
+
+	(function (module, exports) {
+		class RelativizeUrl {
+		  static components = [
+		    {name: 'protocol', write: u => u.protocol },
+		    {name: 'hostname', write: u => '//' + u.hostname },
+		    {name: 'port', write: u => ':' + u.port },
+		    {name: 'pathname', write: (u, frm, relativize) => {
+		      if (!relativize) return u.pathname;
+		      const f = frm.pathname.split('/').slice(1);
+		      const t = u.pathname.split('/').slice(1);
+		      const maxDepth = Math.max(f.length, t.length);
+
+		      let start = 0;
+		      while(start < maxDepth && f[start] === t[start]) ++start;
+		      const rel = f.slice(start+1).map(c => '..').concat(t.slice(start === f.length ? start - 1 : start)).join('/');
+		      return rel.length <= u.pathname.length ? rel : u.pathname
+		    }},
+		    {name: 'search', write: u => u.search },
+		    {name: 'hash', write: u => u.hash},
+		  ];
+
+		  constructor (base, options) { this.base = base; this.options = options; }
+
+		  relate (rel) { return RelativizeUrl.relativize(rel, this.base, this.options); }
+
+		  static relativize (rel, base, opts = {}) { // opts not yet used
+		    const from = new URL(base);
+		    const to = new URL(rel, from);
+		    let ret = '';
+		    for (let component of RelativizeUrl.components) {
+		      if (ret) { // force abs path if e.g. host was diffferent
+		        if (to[component.name]) {
+		          ret += component.write(to, from, false);
+		        }
+		      } else if (from[component.name] !== to[component.name]) {
+		        ret = component.write(to, from, true);
+		      }
+		    }
+		    return ret;
+		  }
+		}
+
+		/* istanbul ignore next */
+		if (typeof commonjsRequire !== "undefined" && 'object' !== "undefined")
+		  module.exports = RelativizeUrl; 
+	} (relativizeUrl));
+
+	var relativizeUrlExports = relativizeUrl.exports;
 
 	(function (exports) {
 		/**
@@ -11723,7 +11439,7 @@
 
 	var stuff = {
 	  JsYaml: jsYaml,
-	  RdfDataFactory: rdfDataFactory$1,
+	  RdfDataFactory: rdfDataFactory,
 	  ShExLoader: shexLoaderExports,
 	  ShExValidator: shexValidator,
 	  RdfJsDb: neighborhoodRdfjsExports,

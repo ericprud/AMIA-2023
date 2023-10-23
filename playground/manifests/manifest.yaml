@@ -44,7 +44,7 @@
       shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
 
 - label: Patient (R5) JSON
-  dataFormat: Turtle
+  dataFormat: JSON
   dataURL: patient-example.json
   resourceType: 'Patient'
   sparqlQueries:
