@@ -3,6 +3,9 @@ const MANIFEST = {
   default: 'playground/manifests/manifest.yaml'
 };
 
+class TooFewResultsError extends Error {}
+class TooManyResultsError extends Error {}
+
 class Playground {
 
   constructor () {
@@ -94,7 +97,9 @@ SELECT ?resource ?id ?div {
       }
     } catch (e) {
       $('#text').empty().append(
-        $('<p/>', {"class": "error"}).text(e.message)
+        e instanceof TooFewResultsError
+        ? $('<p/>', {"class": "warning"}).text('no div in Resource')
+        : $('<p/>', {"class": "error"}).text(e.message)
       );
     }
 
@@ -134,8 +139,10 @@ SELECT ?resource ?id ?div {
   async expectOneQueryResult (query) {
     const db = await this.parseDataPane();
     const typed = await this.executeQuery(db, query);
-    if (typed.length !== 1)
-      throw Error(`Expected 1 result, got ${typed.length}:\n${query}`);
+    if (typed.length < 1)
+      throw new TooFewResultsError(`Expected 1 result, got ${typed.length}:\n${query}`);
+    if (typed.length > 1)
+      throw new TooManyResultsError(`Expected 1 result, got ${typed.length}:\n${query}`);
     return typed[0];
   }
 

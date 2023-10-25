@@ -1,0 +1,67 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT ?obsId ?patient {
+
+  ?obs a fhir:Observation;
+    fhir:nodeRole fhir:treeRoot;
+    fhir:id [ fhir:v ?obsId ];
+    fhir:status [ fhir:v "final" ];
+    fhir:code [
+      fhir:coding [ rdf:rest*/rdf:first [
+        a <http://loinc.org/rdf#72166-2>;
+        fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ];
+        fhir:code [ fhir:v "72166-2" ]; # "Tobacco smoking status"
+      ] ];
+    ];
+    fhir:subject [ fhir:link ?patient ];
+    fhir:effective [ fhir:v ?effectiveDate ];
+    fhir:value [
+      fhir:coding [ rdf:rest*/rdf:first [
+        a ?T1 ;
+        fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ];
+        fhir:code [ fhir:v "8517006" ];
+        fhir:display [ fhir:v "Ex-smoker (finding)" ];
+      ] ]
+    ];
+  
+    fhir:component [ rdf:rest*/rdf:first [
+      fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a ?T2] ] ];
+      fhir:value [
+        fhir:value [ fhir:v ?packYears ];
+        fhir:unit [ fhir:v "{PackYears}" ];
+        fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
+        fhir:code [ fhir:v "{PackYears}" ]
+      ];
+    ] ],
+    [ rdf:rest*/rdf:first [
+      fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a ?T3] ] ];
+      fhir:value [
+        fhir:value [ fhir:v ?smokingYears ];
+        fhir:unit [ fhir:v "Years Used" ];
+        fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
+        fhir:code [ fhir:v "a" ]
+      ];
+    ] ],
+    [ rdf:rest*/rdf:first [
+      fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a ?T4] ] ];
+      fhir:value [
+        fhir:value [ fhir:v ?packsPerDay ];
+        fhir:unit [ fhir:v "Packs/Day" ];
+        fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ];
+        fhir:code [ fhir:v "228963008" ]
+      ];
+    ] ],
+    [ rdf:rest*/rdf:first [
+      fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a ?T5] ] ];
+      fhir:value [ fhir:v ?dateQuit ];
+    ] ].
+  
+    FILTER (?T1 = <http://snomed.info/id/8517006>
+         && ?T2 = <http://snomed.info/id/401201003>
+         && ?T3 = <http://loinc.org/rdf#88029-4>
+         && ?T4 = <http://loinc.org/rdf#8663-7>
+         && ?T5 = <http://loinc.org/rdf#74010-0>)
+
+}

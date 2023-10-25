@@ -87,6 +87,12 @@
       action: validate
       shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
 
-- label: foo
-- label: bar
-- label: baz
+- label: a smoker
+  dataFormat: Turtle
+  dataURL: Observation-58671.ttl
+  resourceType: Observation
+  sparqlQueries:
+    - label: smoker
+      action: query
+      sparqlQueryURL: smoker.rq
+
