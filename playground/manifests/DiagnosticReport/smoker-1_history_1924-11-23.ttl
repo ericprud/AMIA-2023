@@ -1,0 +1,56 @@
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX shex: <http://www.w3.org/ns/shex#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX fhirshex: <http://hl7.org/fhir/shape/>
+PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
+# was 57582
+<smoker-1_history_1924-11-23> a fhir:DiagnosticReport;
+  fhir:nodeRole fhir:treeRoot;
+  fhir:Resource.id [ fhir:v "smoker-1_history_1924-11-23" ];
+  fhir:DiagnosticReport.status [ fhir:v "final" ];
+  fhir:DiagnosticReport.code [
+    fhir:CodeableConcept.coding ( [
+      a <http://loinc.org/rdf#34117-2>;
+      fhir:Coding.system [
+        fhir:v "http://loinc.org"^^xsd:anyURI
+      ];
+      fhir:Coding.code [ fhir:v "34117-2" ];
+      fhir:Coding.display [ fhir:v "History and physical note" ];
+    ] [
+      a <http://loinc.org/rdf#51847-2>;
+      fhir:Coding.system [
+        fhir:v "http://loinc.org"^^xsd:anyURI
+      ];
+      fhir:Coding.code [ fhir:v "51847-2" ];
+      fhir:Coding.display [ fhir:v "Evaluation + Plan note" ];
+    ] )
+  ];
+  fhir:DiagnosticReport.subject [
+    fhir:link <../Patient/smoker-1>;
+    fhir:Reference.reference [
+      fhir:v "Patient/smoker-1"
+    ]
+  ];
+  fhir:DiagnosticReport.encounter [
+    fhir:link <../Encounter/57580>;
+    fhir:Reference.reference [
+      fhir:v "Encounter/57580"
+    ]
+  ];
+  fhir:DiagnosticReport.effectiveDateTime [
+    fhir:v "1924-11-23T23:14:15-08:00"^^xsd:dateTime
+  ];
+  fhir:DiagnosticReport.issued [
+    fhir:v "1924-11-23T23:14:15.593-08:00"^^xsd:dateTime
+  ];
+  fhir:DiagnosticReport.performer ( [
+    fhir:link <http://hl7.org/Practitioner/55126>;
+    fhir:Reference.reference [ fhir:v "Practitioner/55126" ];
+    fhir:Reference.display [ fhir:v "Dr. Arla414 Fritsch593" ];
+  ] ).
+
+# Triples not in FHIR Resource:
+<http://hl7.org/Encounter/57580> a fhir:Encounter.
+<../Patient/smoker-1> a fhir:Patient.
+<http://hl7.org/Practitioner/55126> a fhir:Practitioner.

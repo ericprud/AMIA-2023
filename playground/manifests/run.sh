@@ -1,0 +1,1 @@
+java -jar ~/Downloads/sparql-delight\ \(2\).jar smoker-codings.rq Patient/smoker-1.ttl Observation/smoker-1_smoking-2022-05-19.ttl Observation/smoker-1_smoking-2023-06-20.ttl Observation/smoker-1_A1c.ttl DiagnosticReport/smoker-1_history_1924-11-23.ttl

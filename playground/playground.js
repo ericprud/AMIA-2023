@@ -13,7 +13,20 @@ class Playground {
 
   init () {
     document.addEventListener("DOMContentLoaded", this.onLoad.bind(this));
+    this.fhirPreprocessorReady = this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
+    this.resource = null;
+    this.id = null;
     return this;
+  }
+
+  async loadFhirShEx (url) {
+    const resp = await fetch(url);
+    if (!resp.ok)
+      throw Error(`failed to load FHIR ShEx JSON from <${url}>:\n${await resp.text()}`);
+    const schema = await resp.json();
+    const processor = new Stuff.FhirPreprocessor.toRdf_rdvCh(
+      schema, {r: true, d: true, v: true, c: false, h: false}
+    );
   }
 
   async onLoad () {
@@ -22,7 +35,6 @@ class Playground {
     const manifestURL = params.get(MANIFEST.param) || MANIFEST.default;
     let now = '';
     try {
-
       now = `fetch <${manifestURL}>`;
       const body = await this.getBody(manifestURL, 'manifest');
       now = `parse manifest ${body}`;
@@ -37,6 +49,14 @@ class Playground {
   }
 
   setupEvents () {
+    $('#left select').on('change', evt => {
+      if ($('#data select').val() === 'JSON' && $('#data textarea').val().length > 0) {
+        // const proprocessor = await this.fhirPreprocessorReady;
+        // const json = JSON.parse($('#data textarea').val());
+        // const db = proprocessor.preprocess(json);
+      }
+    });
+
     $('#right select').on('change', evt => {
       // Reveal one right pane depending on select.
       $('#right select option').get().map(elt => {
@@ -155,10 +175,15 @@ SELECT ?resource ?id ?div {
 
   async executeQuery (db, query) {
     const myEngine = new Comunica.QueryEngine();
+    const startTime = new Date();
+    $('button.run').text(`Started ${startTime}`);
     const typedStream = await myEngine.queryBindings(query, {sources: [db]});
-    const rows = (await typedStream.toArray()).map(
+    const asArray = await typedStream.toArray();
+    $('button.run').text(`Done ${(new Date() - startTime)/1000}`);
+    const rows = asArray.map(
       b => Object.fromEntries(b.entries)
     );
+    console.log(rows);
     return rows;
   }
 

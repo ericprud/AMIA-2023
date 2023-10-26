@@ -94,5 +94,13 @@
   sparqlQueries:
     - label: smoker
       action: query
-      sparqlQueryURL: smoker.rq
+      sparqlQueryURL: smoker-1filter.rq
+
+    - label: smoker-filter
+      action: query
+      sparqlQueryURL: smoker-filter.rq
+
+    - label: smoker-bind
+      action: query
+      sparqlQueryURL: smoker-bind.rq
 
