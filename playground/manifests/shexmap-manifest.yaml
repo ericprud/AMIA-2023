@@ -1,0 +1,63 @@
+---
+- schemaLabel: smoker
+  schemaURL: smokerFHIRShExMap.shex
+  dataLabel: a smoker
+  dataURL: Observation/smoker-1_smoking-2023-06-20.ttl
+  queryMap: "{FOCUS fhir:nodeRole fhir:treeRoot}@<#FHIRSmokingAssessment>"
+  outputSchemaURL: ../smokerCDSShExMap.shex
+  outputShape: "<#CDSSmokingAssessment>"
+  staticVars: {}
+  createRoot: <DAMSmokingAssessment>
+  status: conformant
+
+- schemaLabel: symmetric
+  schema: |
+    PREFIX    : <http://a.example/>
+    PREFIX schema: <http://schema.org/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX Map: <http://shex.io/extensions/Map/#>
+
+    start=@<Concert>
+
+    <Concert> {
+      schema:bandName xsd:string %Map:{ :Name %} ;
+      schema:tix IRI %Map:{ :TicketUrl %} ;
+      schema:venue @<Venue>
+    }
+    <Venue> {
+      schema:location xsd:string %Map:{ :LocationName %} ;
+      schema:address  xsd:string %Map:{ :LocationAddress %}
+    }
+  dataLabel: Non-IRI
+  data: |
+    PREFIX schema: <http://schema.org/>
+
+    [] schema:bandName "B.B. King";
+      schema:tix "https://www.etix.com/ticket/1771656";
+      schema:venue [
+        schema:location "Lupo’s Heartbreak Hotel";
+        schema:address "79 Washington St...."
+      ] .
+  queryMap: _:b0@START
+  outputSchema: |
+    PREFIX    : <http://a.example/>
+    PREFIX schema: <http://schema.org/>
+    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+    PREFIX Map: <http://shex.io/extensions/Map/#>
+
+    start=@<Concert>
+
+    <Concert> {
+      schema:bandName xsd:string %Map:{ :Name %} ;
+      schema:tix IRI %Map:{ :TicketUrl %} ;
+      schema:venue @<Venue>
+    }
+    <Venue> {
+      schema:location xsd:string %Map:{ :LocationName %} ;
+      schema:address  xsd:string %Map:{ :LocationAddress %}
+    }
+  outputShape: "<Concert>"
+  staticVars: "{}"
+  createRoot: _:root
+  status: conformant
+

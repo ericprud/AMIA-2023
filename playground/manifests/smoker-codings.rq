@@ -1,14 +1,17 @@
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
-SELECT ?obsId ?patient ?birthDate ?effectiveDate ?lastSmokingAssessmentAge ?packYears ?smokingYears ?packsPerDay ?dateQuit ?patientAge {
+SELECT ?obsId ?patient ?birthDate ?smokingAssessmentDate ?packYears
+       ?smokingYears ?packsPerDay ?dateQuit ?patientAge {
 
   BIND (NOW() AS ?now) # we'll need this later
-
+# BIND ("2023-10-27T08:17:56.279+02:00"^^xsd:dateTime AS ?now)
   {
-    SELECT ?patient ?birthDate ?effectiveDate ?packYears ?smokingYears ?packsPerDay ?dateQuit {
+    SELECT ?patient ?birthDate ?smokingAssessmentDate
+           ?packYears ?smokingYears ?packsPerDay ?dateQuit {
 
+      # Observations with code of Tobacco smoking status
       ?obs a fhir:Observation;
         fhir:nodeRole fhir:treeRoot;
         fhir:id [ fhir:v ?obsId ];
@@ -16,24 +19,23 @@ SELECT ?obsId ?patient ?birthDate ?effectiveDate ?lastSmokingAssessmentAge ?pack
         fhir:code [
           fhir:coding [ rdf:rest*/rdf:first [
             a <http://loinc.org/rdf#72166-2>;
-            fhir:system [ fhir:v "http://loinc.org"^^xsd:anyURI ];
-            fhir:code [ fhir:v "72166-2" ]; # "Tobacco smoking status"
           ] ];
         ];
         fhir:subject [ fhir:link ?patient ];
-        fhir:effective [ fhir:v ?effectiveDate ].
+        fhir:effective [ fhir:v ?smokingAssessmentDate ].
     
+      # Ex-smoker (finding)
       ?obs fhir:value [
           fhir:coding [ rdf:rest*/rdf:first [
             a <http://snomed.info/id/8517006> ;
-            fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ];
-            fhir:code [ fhir:v "8517006" ];
-            fhir:display [ fhir:v "Ex-smoker (finding)" ];
           ] ]
         ].
-      
+
+      # Pack years
       ?obs fhir:component [ rdf:rest*/rdf:first [
-        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a <http://snomed.info/id/401201003>] ] ];
+        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [
+          a <http://snomed.info/id/401201003>
+        ] ] ];
         fhir:value [
           fhir:value [ fhir:v ?packYears ];
           fhir:unit [ fhir:v "{PackYears}" ];
@@ -41,9 +43,12 @@ SELECT ?obsId ?patient ?birthDate ?effectiveDate ?lastSmokingAssessmentAge ?pack
           fhir:code [ fhir:v "{PackYears}" ]
         ];
       ] ] .
-    
+
+      # Smoking years
       ?obs fhir:component [ rdf:rest*/rdf:first [
-        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a <http://loinc.org/rdf#88029-4>] ] ];
+        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [
+          a <http://loinc.org/rdf#88029-4>
+        ] ] ];
         fhir:value [
           fhir:value [ fhir:v ?smokingYears ];
           fhir:unit [ fhir:v "Years Used" ];
@@ -51,9 +56,12 @@ SELECT ?obsId ?patient ?birthDate ?effectiveDate ?lastSmokingAssessmentAge ?pack
           fhir:code [ fhir:v "a" ]
         ];
       ] ].
-    
+
+      # Packs per day
       ?obs fhir:component [ rdf:rest*/rdf:first [
-        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a <http://loinc.org/rdf#8663-7>] ] ];
+        fhir:code [ fhir:coding [ rdf:rest*/rdf:first [
+          a <http://loinc.org/rdf#8663-7>
+        ] ] ];
         fhir:value [
           fhir:value [ fhir:v ?packsPerDay ];
           fhir:unit [ fhir:v "Packs/Day" ];
@@ -61,26 +69,36 @@ SELECT ?obsId ?patient ?birthDate ?effectiveDate ?lastSmokingAssessmentAge ?pack
           fhir:code [ fhir:v "228963008" ]
         ];
       ] ].
-    
+
+      # Date quit
       OPTIONAL {
         ?obs fhir:component [ rdf:rest*/rdf:first [
-          fhir:code [ fhir:coding [ rdf:rest*/rdf:first [a <http://loinc.org/rdf#74010-0>] ] ];
+          fhir:code [ fhir:coding [ rdf:rest*/rdf:first [
+            a <http://loinc.org/rdf#74010-0>
+          ] ] ];
           fhir:value [ fhir:v ?dateQuit ];
         ] ].
       }
 
     }
-      ORDER BY DESC(?effectiveDate)
-      LIMIT 1
-      # HAVING (?effectiveDate = "2023-06-20T00:00:00-07:00"^^xsd:dateTime)
+    ORDER BY DESC(?smokingAssessmentDate)
+    LIMIT 1
   }
+  # Assessment within last year
+  BIND( day(?now) - day(?smokingAssessmentDate)
+        + 365.25/12*(month(?now) - month(?smokingAssessmentDate)
+        + 12*(year(?now) - year(?smokingAssessmentDate)))
+       AS ?smokingAssessmentAge)
+  FILTER ( ?smokingAssessmentAge < 365.25 )
 
-  BIND( year(?now) - year(?effectiveDate) - if(month(?now)<month(?effectiveDate) || (month(?now)=month(?effectiveDate) && day(?now)<day(?effectiveDate)),1,0) as ?lastSmokingAssessmentAge )
-
-#  FILTER (?lastSmokingAssessmentAge > 50 && ?lastSmokingAssessmentAge < 100)
-  ?subject fhir:birthDate [ fhir:v ?birthDate ] .
-
-  BIND( year(?now) - year(?birthDate) - if(month(?now)<month(?birthDate) || (month(?now)=month(?birthDate) && day(?now)<day(?birthDate)),1,0) as ?patientAge )
-
+  # Patient in age range
+  ?patient fhir:birthDate [ fhir:v ?birthDate ] .
+  BIND( (day(?now) - day(?birthDate)
+         + 365.25/12*(month(?now) - month(?birthDate)
+         + 12*(year(?now) - year(?birthDate)))
+        )/365.25
+       AS ?patientAge)
   FILTER (?patientAge > 50 && ?patientAge < 100)
+
+  # ... Diagnosis, Service, ServiceRequest
 }

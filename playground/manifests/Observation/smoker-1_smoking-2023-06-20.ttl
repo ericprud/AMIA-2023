@@ -1,11 +1,5 @@
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX fhir: <http://hl7.org/fhir/>
-PREFIX shex: <http://www.w3.org/ns/shex#>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX owl: <http://www.w3.org/2002/07/owl#>
-PREFIX fhirshex: <http://hl7.org/fhir/shape/>
-PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
 # was http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/Observation/58671
 <smoker-1_smoking-2023-06-20> a fhir:Observation;
   fhir:nodeRole fhir:treeRoot;
@@ -54,7 +48,7 @@ PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
       fhir:display [ fhir:v "Ex-smoker (finding)" ];
     ] )
   ];
-  fhir:component ( [
+  fhir:component ( [ fhir:XXX "cigarette";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#81228-9>;
@@ -76,7 +70,7 @@ PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
         fhir:display [ fhir:v "Cigarette Smoker" ];
       ] )
     ];
-  ] [
+  ] [ fhir:XXX "packYears";
     fhir:code [
       fhir:coding ( [
         a <http://snomed.info/id/401201003>;
@@ -91,7 +85,7 @@ PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
       fhir:code [ fhir:v "{PackYears}" ]
     ];
-  ] [
+  ] [ fhir:XXX "smokingYears";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#88029-4>;
@@ -106,7 +100,7 @@ PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
       fhir:code [ fhir:v "a" ]
     ];
-  ] [
+  ] [ fhir:XXX "packsPerDay";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#8663-7>;
@@ -126,7 +120,7 @@ PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
       fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ];
       fhir:code [ fhir:v "228963008" ]
     ];
-  ] [
+  ] [ fhir:XXX "dateQuit";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#74010-0>;

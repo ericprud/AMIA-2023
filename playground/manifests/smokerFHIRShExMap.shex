@@ -1,0 +1,238 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Map: <http://shex.io/extensions/Map/#>
+PREFIX    : <http://a.example/>
+
+<#FHIRSmokingAssessment> {
+
+    a [fhir:Observation];
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id { fhir:v xsd:string %Map:{ :obsId %} };
+    fhir:status { fhir:v ["final"] };
+    fhir:category .?;
+    fhir:code { fhir:coding @<One_SmokingAssessment> };
+    fhir:subject { fhir:link IRI %Map:{ :patient %} };
+    fhir:effective { fhir:v xsd:dateTime %Map:{ :smokingAssessmentDate %} };
+/*    fhir:component @<All_components>;
+    fhir:component .*;*/
+} AND { fhir:component @<One_component_PackYears>
+} AND { fhir:component @<One_component_SmokingYears>
+} AND { fhir:component @<One_component_PacksPerDay>
+} AND { fhir:component @<One_component_DateQuit>
+}
+
+<One_SmokingAssessment> CLOSED {
+  (
+    rdf:first @<SmokingAssessment>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_SmokingAssessment>
+   |
+    rdf:first @<Not_SmokingAssessment>;
+    rdf:rest @<One_SmokingAssessment>
+  )
+}
+<OneOrMore_Not_SmokingAssessment> CLOSED {
+    rdf:first @<Not_SmokingAssessment>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_SmokingAssessment>
+}
+<SmokingAssessment> {
+    a [<http://loinc.org/rdf#72166-2>];
+}
+<Not_SmokingAssessment> {
+    a NOT [<http://loinc.org/rdf#72166-2>];
+}
+
+<All_components> {
+  rdf:first { fhir:XXX ["cigarette"] };
+  rdf:rest {
+    rdf:first @<component_PackYears>;
+    rdf:rest {
+      rdf:first @<component_SmokingYears>;
+      rdf:rest {
+        rdf:first @<component_PacksPerDay>;
+        rdf:rest {
+          rdf:first @<component_DateQuit>;
+          rdf:rest [rdf:nil]
+        }
+      }
+    }
+  }
+}
+
+/** Pack Years component
+ */
+<One_component_PackYears> {
+  (
+    rdf:first @<component_PackYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_PackYears>
+   |
+    rdf:first @<Not_component_PackYears>;
+    rdf:rest @<One_component_PackYears>
+  )
+}
+<OneOrMore_Not_component_PackYears> CLOSED {
+    rdf:first @<Not_component_PackYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_PackYears>
+}
+<component_PackYears> { # fhir:XXX ["packYears"];
+  fhir:code {
+    fhir:coding @<One_code_PackYears>
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :packYears %} };
+    fhir:unit { fhir:v ["{PackYears}"] };
+    fhir:system { fhir:v ["http://unitsofmeasure.org"^^xsd:anyURI] };
+    fhir:code { fhir:v ["{PackYears}"] };
+  };
+}
+<Not_component_PackYears> {
+  fhir:code { fhir:coding NOT @<One_code_PackYears> }
+}
+<One_code_PackYears> CLOSED {
+  (
+    rdf:first @<code_PackYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_PackYears>
+   |
+    rdf:first @<Not_code_PackYears>;
+    rdf:rest @<One_code_PackYears>
+  )
+}
+<OneOrMore_Not_code_PackYears> CLOSED {
+    rdf:first @<Not_code_PackYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_PackYears>
+}
+<code_PackYears> { a [<http://snomed.info/id/401201003>] }
+<Not_code_PackYears> { a NOT [<http://snomed.info/id/401201003>] }
+
+/** Smoking Years component
+ */
+<One_component_SmokingYears> {
+  (
+    rdf:first @<component_SmokingYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_SmokingYears>
+   |
+    rdf:first @<Not_component_SmokingYears>;
+    rdf:rest @<One_component_SmokingYears>
+  )
+}
+<OneOrMore_Not_component_SmokingYears> CLOSED {
+    rdf:first @<Not_component_SmokingYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_SmokingYears>
+}
+<component_SmokingYears> { # fhir:XXX ["smokingYears"];
+  fhir:code {
+    fhir:coding @<One_code_SmokingYears>
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :smokingYears %} };
+    fhir:unit { fhir:v ["Years Used"] };
+    fhir:system { fhir:v ["http://unitsofmeasure.org"^^xsd:anyURI] };
+    fhir:code { fhir:v ["a"] };
+  };
+}
+<Not_component_SmokingYears> {
+  fhir:code { fhir:coding NOT @<One_code_SmokingYears> }
+}
+<One_code_SmokingYears> CLOSED {
+  (
+    rdf:first @<code_SmokingYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_SmokingYears>
+   |
+    rdf:first @<Not_code_SmokingYears>;
+    rdf:rest @<One_code_SmokingYears>
+  )
+}
+<OneOrMore_Not_code_SmokingYears> CLOSED {
+    rdf:first @<Not_code_SmokingYears>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_SmokingYears>
+}
+<code_SmokingYears> { a [<http://loinc.org/rdf#88029-4>] }
+<Not_code_SmokingYears> { a NOT [<http://loinc.org/rdf#88029-4>] }
+
+/** Packs per Day component
+ */
+<One_component_PacksPerDay> {
+  (
+    rdf:first @<component_PacksPerDay>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_PacksPerDay>
+   |
+    rdf:first @<Not_component_PacksPerDay>;
+    rdf:rest @<One_component_PacksPerDay>
+  )
+}
+<OneOrMore_Not_component_PacksPerDay> CLOSED {
+    rdf:first @<Not_component_PacksPerDay>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_PacksPerDay>
+}
+<component_PacksPerDay> { # fhir:XXX ["packsPerDay"];
+  fhir:code {
+    fhir:coding @<One_code_PacksPerDay>
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :packsPerDay %} };
+    fhir:unit { fhir:v ["Packs/Day"] };
+    fhir:system { fhir:v ["http://snomed.info/sct"^^xsd:anyURI] };
+    fhir:code { fhir:v ["228963008"] };
+  };
+}
+<Not_component_PacksPerDay> {
+  fhir:code { fhir:coding NOT @<One_code_PacksPerDay> }
+}
+<One_code_PacksPerDay> CLOSED {
+  (
+    rdf:first @<code_PacksPerDay>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_PacksPerDay>
+   |
+    rdf:first @<Not_code_PacksPerDay>;
+    rdf:rest @<One_code_PacksPerDay>
+  )
+}
+<OneOrMore_Not_code_PacksPerDay> CLOSED {
+    rdf:first @<Not_code_PacksPerDay>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_PacksPerDay>
+}
+<code_PacksPerDay> { a [<http://loinc.org/rdf#8663-7>] }
+<Not_code_PacksPerDay> { a NOT [<http://loinc.org/rdf#8663-7>] }
+
+/** Date Quit component
+ */
+<One_component_DateQuit> {
+  (
+    rdf:first @<component_DateQuit>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_DateQuit>
+   |
+    rdf:first @<Not_component_DateQuit>;
+    rdf:rest @<One_component_DateQuit>
+  )
+}
+<OneOrMore_Not_component_DateQuit> CLOSED {
+    rdf:first @<Not_component_DateQuit>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_component_DateQuit>
+}
+<component_DateQuit> { # fhir:XXX ["dateQuit"];
+  fhir:code {
+    fhir:coding @<One_code_DateQuit>
+  }; 
+  fhir:value {
+    fhir:v xsd:dateTime %Map:{ :dateQuit %};
+  };
+}
+<Not_component_DateQuit> {
+  fhir:code { fhir:coding NOT @<One_code_DateQuit> }
+}
+<One_code_DateQuit> CLOSED {
+  (
+    rdf:first @<code_DateQuit>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_DateQuit>
+   |
+    rdf:first @<Not_code_DateQuit>;
+    rdf:rest @<One_code_DateQuit>
+  )
+}
+<OneOrMore_Not_code_DateQuit> CLOSED {
+    rdf:first @<Not_code_DateQuit>;
+    rdf:rest [rdf:nil] OR @<OneOrMore_Not_code_DateQuit>
+}
+<code_DateQuit> { a [<http://loinc.org/rdf#74010-0>] }
+<Not_code_DateQuit> { a NOT [<http://loinc.org/rdf#74010-0>] }
+
