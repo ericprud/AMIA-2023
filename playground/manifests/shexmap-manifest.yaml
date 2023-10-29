@@ -10,6 +10,17 @@
   createRoot: <DAMSmokingAssessment>
   status: conformant
 
+- schemaLabel: smoker-toy
+  schemaURL: smokerFHIRShExMap-toy.shex
+  dataLabel: a smoker
+  dataURL: Observation/smoker-1_smoking-2023-06-20-toy.ttl
+  queryMap: "{FOCUS fhir:nodeRole fhir:treeRoot}@<#FHIRSmokingAssessment>"
+  outputSchemaURL: ../smokerCDSShExMap.shex
+  outputShape: "<#CDSSmokingAssessment>"
+  staticVars: {}
+  createRoot: <DAMSmokingAssessment>
+  status: conformant
+
 - schemaLabel: symmetric
   schema: |
     PREFIX    : <http://a.example/>

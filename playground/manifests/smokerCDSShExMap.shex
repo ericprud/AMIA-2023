@@ -11,5 +11,5 @@ PREFIX    : <http://a.example/>
     my:packYears . %Map:{ :packYears %};
     my:smokingYears . %Map:{ :smokingYears %};
     my:packsPerDay . %Map:{ :packsPerDay %};
-    my:dateQuit . %Map:{ :dateQuit %};
+    my:dateQuit . ? %Map:{ :dateQuit %};
 }

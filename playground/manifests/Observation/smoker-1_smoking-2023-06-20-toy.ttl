@@ -48,7 +48,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       fhir:display [ fhir:v "Ex-smoker (finding)" ];
     ] )
   ];
-  fhir:component ( [
+  fhir:component ( [ fhir:XXX "cigarette";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#81228-9>;
@@ -70,7 +70,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
         fhir:display [ fhir:v "Cigarette Smoker" ];
       ] )
     ];
-  ] [
+  ] [ fhir:XXX "packYears";
     fhir:code [
       fhir:coding ( [
         a <http://snomed.info/id/401201003>;
@@ -85,7 +85,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
       fhir:code [ fhir:v "{PackYears}" ]
     ];
-  ] [
+  ] [ fhir:XXX "smokingYears";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#88029-4>;
@@ -100,7 +100,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       fhir:system [ fhir:v "http://unitsofmeasure.org"^^xsd:anyURI ];
       fhir:code [ fhir:v "a" ]
     ];
-  ] [
+  ] [ fhir:XXX "packsPerDay";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#8663-7>;
@@ -120,7 +120,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
       fhir:system [ fhir:v "http://snomed.info/sct"^^xsd:anyURI ];
       fhir:code [ fhir:v "228963008" ]
     ];
-  ] [
+  ] [ fhir:XXX "dateQuit";
     fhir:code [
       fhir:coding ( [
         a <http://loinc.org/rdf#74010-0>;
