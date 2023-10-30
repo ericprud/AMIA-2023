@@ -1,12 +1,8 @@
-PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX fhir: <http://hl7.org/fhir/>
-PREFIX shex: <http://www.w3.org/ns/shex#>
-PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-PREFIX owl: <http://www.w3.org/2002/07/owl#>
-PREFIX fhirshex: <http://hl7.org/fhir/shape/>
-PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
 # invented
+
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
 <smoker-1_smoking-2022-05-19> a fhir:Observation;
   fhir:nodeRole fhir:treeRoot;
   fhir:id [ fhir:v "smoker-1_smoking-2022-05-19" ];

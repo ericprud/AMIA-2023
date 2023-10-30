@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@comunica/query-sparql-rdfjs": "^2.9.0",
+    "@comunica/query-sparql-rdfjs": "^2.10.0",
     "@shexjs/loader": "^1.0.0-alpha.27",
     "@shexjs/neighborhood-rdfjs": "^1.0.0-alpha.27",
     "@shexjs/validator": "^1.0.0-alpha.27",

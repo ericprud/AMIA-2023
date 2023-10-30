@@ -2,6 +2,7 @@ const MANIFEST = {
   param: 'manifest',
   default: 'playground/manifests/manifest.yaml'
 };
+const PARSE_TIMEOUT = 400; // wait 1 second before re-parsing data
 
 class TooFewResultsError extends Error {}
 class TooManyResultsError extends Error {}
@@ -16,6 +17,8 @@ class Playground {
     this.fhirPreprocessorReady = this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
     this.resource = null;
     this.id = null;
+    this.sources = [];
+    this.dataParseTimer = null; // serves as a dirty bit
     return this;
   }
 
@@ -64,10 +67,44 @@ class Playground {
         elt.selected ? setMe.show() : setMe.hide();
       })
     });
+
+    $('#curSources').on('change', evt => {
+      // swap the selected data file into the textarea
+      if (this.dataParseTimer) {
+        clearTimeout(this.dataParseTimer);
+        this.reflectUpdatesToSources();
+      }
+      const source = this.sources.find(src => src.url.href === $('#curSources').val());
+      $('#data textarea').val(source.body);
+      $('#data textarea').data('url', source.url);
+      this.reflectUpdatesToSources();
+    });
+
+    $('#data textarea').on('keyup', evt => {
+      // set timer to update the sources to relect the current contents of the textarea
+      if (this.dataParseTimer)
+        clearTimeout(this.dataParseTimer);
+
+      this.dataParseTimer = setTimeout(_ => this.reflectUpdatesToSources(), PARSE_TIMEOUT);
+    });
+  }
+
+  reflectUpdatesToSources () {
+    $('#text').empty().removeClass('error');
+    const url = $('#data textarea').data('url');
+    const src = this.sources.find(src => src.url.href === url.href) || {label: 'console', url};
+    src.body = $('#data textarea').val();
+    src.db = null;
+    try {
+      src.db = this.parseTurtle(url.href, src.body);
+    } catch (e) {
+      $('#text').addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
+    }
+    this.dataParseTimer = null;
   }
 
   paintManifest (manifest, from, action, base) {
-    from.find('.manifest').append(
+    from.find('.manifest').empty().append(
       manifest.map(item => $(`<li/>`).append(
         $(`<button/>`)
           .text(item.label)
@@ -77,33 +114,88 @@ class Playground {
   }
 
   async genericManifestSelect (manifestEntry, base, fieldToSelector) {
+    const pz = [];
+    const ret = [];
     for (const [manifestKey, selector] of Object.entries(fieldToSelector)) {
       // $(selector).empty();
+      let aborted = false;
       const derefMe = `${manifestKey}URL`;
       if (derefMe in manifestEntry) {
-        const url = new URL(manifestEntry[derefMe], base);
-        let body = null;
-        try {
-          body = await this.getBody(url, manifestKey);
-        } catch (e) {
-          body = e;
+        const relUrlStrs = Array.isArray(manifestEntry[derefMe])
+              ? manifestEntry[derefMe]
+              : [manifestEntry[derefMe]];
+        for (const relUrlStr of relUrlStrs) {
+          if (aborted)
+            break;
+          const url = new URL(relUrlStr, base);
+          pz.push(
+            fetch(url)
+              .then(
+                resp => resp.text().then(body => {
+                  if (aborted)
+                    return;
+                  if (!resp.ok) {
+                    aborted = true;
+                    const e = Error(`${url} => ${resp.status}`);
+                    console.error(e.message);
+                    e.url = url;
+                    e.body = body;
+                    throw e;
+                  }
+                  add(selector, manifestKey, url, body);
+                }),
+                e => {
+                  console.error(`Error reading ${url}:`, e);
+                  e.url = url;
+                  throw e;
+                }
+              )
+          );
         }
+      } else {
+        add(selector, manifestKey, base, manifestEntry[manifestKey]);
+      }
+    }
+    if (pz.length > 0)
+      await Promise.all(pz)
+    return ret;
+
+    function add (selector, manifestKey, url, body) {
+      if (!(manifestKey in ret)) {
         $(selector).val(body);
         $(selector).data('url', url);
+        ret[manifestKey] = [{url, body}];
       } else {
-        $(selector).val(manifestEntry[manifestKey]);
-        $(selector).data('url', base);
+        ret[manifestKey].push({url, body});
       }
     }
   }
 
+  makeLabel (url) {
+    const m = url.pathname.match(/([^/]+\/[^/]+)$/);
+    const str = m ? m[1] : url.pathname;
+    const len = Math.floor(window.innerWidth/3);
+    const start = str.length - len;
+    return start < 0 ? str : str.substring(start);
+  }
+
   async headerManifestSelect (evt, manifestEntry, base) {
-    await this.genericManifestSelect(manifestEntry, base, {
-      data: '#data textarea',
-      dataFormat: '#data select',
-      // sparqlQuery: '#right textarea.query',
-    });
     $('#text').empty();
+    try {
+      const {data} = await this.genericManifestSelect(manifestEntry, base, {
+        data: '#data textarea',
+        dataFormat: '#data select',
+        // sparqlQuery: '#right textarea.query',
+      });
+      this.sources = data.map(({url, body}) => ({label: this.makeLabel(url), url, body, db: this.parseTurtle(url.href, body)}));
+      const nowShowing = $('#data textarea').data('url').href;
+      $('#curSources').empty().append(this.sources.map(src => $('<option/>', {value: src.url.href, selected: src.url.href === nowShowing}).text(src.label)));
+      console.assert(this.sources.find(source => source.url.href === $('#data textarea').data('url').href));
+    } catch (e) {
+      $('#data').addClass('error');
+      $('#data textarea').val(e?.stack || e?.message || e)
+      return;
+    }
     try {
       const textStuff = await this.expectOneQueryResult(`PREFIX fhir: <http://hl7.org/fhir/>
 SELECT ?resource ?id ?div {
@@ -157,8 +249,8 @@ SELECT ?resource ?id ?div {
   }
 
   async expectOneQueryResult (query) {
-    const db = await this.parseDataPane();
-    const typed = await this.executeQuery(db, query);
+    // const db = await this.parseDataPane();
+    const typed = await this.executeQuery(this.sources.map(src => src.db), query);
     if (typed.length < 1)
       throw new TooFewResultsError(`Expected 1 result, got ${typed.length}:\n${query}`);
     if (typed.length > 1)
@@ -167,23 +259,27 @@ SELECT ?resource ?id ?div {
   }
 
   async parseDataPane () {
+    return this.parseTurtle(location.href, $('#data textarea').val());
+  }
+
+  parseTurtle (baseIRI, text) {
     const db = new N3.Store();
-    const parser = new N3.Parser({baseIRI: location.href})
-    db.addQuads(parser.parse($('#data textarea').val()));
+    const parser = new N3.Parser({baseIRI})
+    db.addQuads(parser.parse(text));
     return db;
   }
 
-  async executeQuery (db, query) {
+  async executeQuery (sources, query) {
     const myEngine = new Comunica.QueryEngine();
     const startTime = new Date();
     $('button.run').text(`Started ${startTime}`);
-    const typedStream = await myEngine.queryBindings(query, {sources: [db]});
+    const typedStream = await myEngine.queryBindings(query, {sources});
     const asArray = await typedStream.toArray();
     $('button.run').text(`Done ${(new Date() - startTime)/1000}`);
     const rows = asArray.map(
       b => Object.fromEntries(b.entries)
     );
-    console.log(rows);
+    console.log('Query result rows:', rows);
     return rows;
   }
 
@@ -206,8 +302,10 @@ SELECT ?resource ?id ?div {
   }
 
   async renderQueryResults (evt) {
-    const db = await this.parseDataPane();
-    const typed = await this.executeQuery(db, $('#right textarea.query').val());
+    // const db = await this.parseDataPane();
+    const db = new N3.Store();// await this.parseDataPane();
+    this.sources.forEach(src => db.addQuads(src.db.getQuads()));
+    const typed = await this.executeQuery([db], $('#right textarea.query').val());
     if (typed.length === 0) {
       $('#runResults').text('no results');
     } else {
@@ -300,4 +398,5 @@ SELECT ?resource ?id ?div {
   }
 }
 
-new Playground().init();
+  const UI = new Playground();
+  UI.init();

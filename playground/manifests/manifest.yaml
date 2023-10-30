@@ -89,9 +89,18 @@
 
 - label: a smoker
   dataFormat: Turtle
-  dataURL: Observation-58671.ttl
+  dataURL:
+    - Observation/smoker-1_smoking-2023-06-20.ttl
+    - Patient/smoker-1.ttl
+    - Observation/smoker-1_smoking-2022-05-19.ttl
+    - Observation/smoker-1_A1c.ttl
+    - DiagnosticReport/smoker-1_history_1924-11-23.ttl
   resourceType: Observation
   sparqlQueries:
+    - label: smoker-coding
+      action: query
+      sparqlQueryURL: smoker-codings.rq
+
     - label: smoker
       action: query
       sparqlQueryURL: smoker-1filter.rq
