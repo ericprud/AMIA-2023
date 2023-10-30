@@ -1,6 +1,7 @@
+# was http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/Observation/58671
 PREFIX fhir: <http://hl7.org/fhir/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-# was http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/Observation/58671
+
 <smoker-1_smoking-2023-06-20> a fhir:Observation;
   fhir:nodeRole fhir:treeRoot;
   fhir:id [ fhir:v "smoker-1_smoking-2023-06-20" ];

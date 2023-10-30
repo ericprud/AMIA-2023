@@ -2,9 +2,6 @@
   <head>
     <title>AMIA Tutorial Playground</title>
     <style>
-      .success { background-color: #7e7; }
-      .warning { background-color: #dd7; }
-      .error   { background-color: #e77; }
 
       .input {
           padding: 0 2em;
@@ -50,6 +47,25 @@
       #runResults td {
           vertical-align: top;
       }
+
+      #curSources { font-size: revert; }
+
+      body { background-color: #eef; }
+      .results {
+          background-color: #eee;
+          border: thick solid #ddd;
+      }
+      #runResults table {
+          background-color: #fff;
+          border-collapse: collapse;
+      }
+      table, th, td {
+          border: 1px solid;
+      }
+
+      .success { background-color: #7e7; }
+      .warning { background-color: #dd7; }
+      .error   { background-color: #e77; }
     </style>
     <script src="playground/playground"></script>
     <script src="playground/build/stuff-bundle.js"></script>
@@ -64,7 +80,11 @@
     </div>
     <div class="panes">
       <section id="data" class="input">
-        <h2>Input Data</h2>
+        <div class="header">
+          <h2>Input Data</h2>
+          <select id="curSources">
+          </select>
+        </div>
         <label>Data language
           <select>
             <option value="-none-">-none-</option>
@@ -73,7 +93,7 @@
           </select>
         </label>
         <textarea spellcheck="false"></textarea>
-        <div id="text"/>
+        <div id="text" class="results"/>
       </section>
       <section id="right" class="input">
         <div class="header">
@@ -86,7 +106,7 @@
         <button class="run" disabled>Run</button>
         <textarea class="query" spellcheck="false"></textarea>
         <textarea class="validate" spellcheck="false" style="display: none;"></textarea>
-        <div id="runResults"/>
+        <div id="runResults" class="results"/>
       </section>
     </div>
   </body>

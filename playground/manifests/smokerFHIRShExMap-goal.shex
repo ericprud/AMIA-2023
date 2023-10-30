@@ -1,0 +1,114 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Map: <http://shex.io/extensions/Map/#>
+PREFIX    : <http://a.example/>
+
+<#FHIRSmokingAssessment> {
+    a [fhir:Observation];
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id { fhir:v xsd:string %Map:{ :obsId %} };
+    fhir:status { fhir:v ["final"] };
+    fhir:category .?;
+    // Select for Smoking Assessments
+    fhir:code { fhir:coding @lib:One(
+        { a [<http://loinc.org/rdf#72166-2>] },
+        { a NOT [<http://loinc.org/rdf#72166-2>] }
+    ) };
+    fhir:subject { fhir:link IRI %Map:{ :patient %} };
+    fhir:effective { fhir:v xsd:dateTime %Map:{ :smokingAssessmentDate %} };
+    fhir:component @lib:All(@<component_PackYears>
+                         OR @<component_SmokingYears>
+                         OR @<component_PacksPerDay>
+                         OR @<component_DateQuit>
+                         OR .); # allow other components;
+}
+
+/** Pack Years component
+ * @binds: :packYears
+ */
+<component_PackYears> {
+  fhir:code {
+    fhir:coding @lib:One(
+        { a [<http://snomed.info/id/401201003>] },
+        { a NOT [<http://snomed.info/id/401201003>] }
+    )
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :packYears %} };
+    fhir:unit { fhir:v ["{PackYears}"] };
+    fhir:system { fhir:v ["http://unitsofmeasure.org"^^xsd:anyURI] };
+    fhir:code { fhir:v ["{PackYears}"] };
+  };
+}
+
+/** Smoking Years component
+ * @binds: :smokingYears
+ */
+<component_SmokingYears> {
+  fhir:code {
+    fhir:coding lib:One(
+        { a [<http://loinc.org/rdf#88029-4>] },
+        { a NOT [<http://loinc.org/rdf#88029-4>] }
+    )
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :smokingYears %} };
+    fhir:unit { fhir:v ["Years Used"] };
+    fhir:system { fhir:v ["http://unitsofmeasure.org"^^xsd:anyURI] };
+    fhir:code { fhir:v ["a"] };
+  };
+}
+
+/** Packs per Day component
+ * @binds: :packsPerDay
+ */
+<component_PacksPerDay> {
+  fhir:code {
+    fhir:coding @lib:One(
+        { a [<http://loinc.org/rdf#8663-7>] },
+        { a NOT [<http://loinc.org/rdf#8663-7>] }
+    )
+  }; 
+  fhir:value {
+    fhir:value { fhir:v xsd:decimal %Map:{ :packsPerDay %} };
+    fhir:unit { fhir:v ["Packs/Day"] };
+    fhir:system { fhir:v ["http://snomed.info/sct"^^xsd:anyURI] };
+    fhir:code { fhir:v ["228963008"] };
+  };
+}
+
+/** Date Quit component
+ * @binds: :dateQuit
+ */
+<component_DateQuit> {
+  fhir:code {
+    fhir:coding @lib:One(
+        { a [<http://loinc.org/rdf#74010-0>] },
+        { a NOT [<http://loinc.org/rdf#74010-0>] }
+    )
+  }; 
+  fhir:value {
+    fhir:v xsd:dateTime %Map:{ :dateQuit %};
+  };
+}
+
+# lib
+MACRO lib:One(ONE, OTHERS) CLOSED {
+  (
+    rdf:first ONE;
+    rdf:rest [rdf:nil] OR @lib:OneOrMore(ONE, OTHERS)
+   |
+    rdf:first OTHERS;
+    rdf:rest @lib:One(ONE, OTHERS)
+  )
+}
+MACRO lib:OneOrMore(ELT) CLOSED {
+    rdf:first ELT;
+    rdf:rest [rdf:nil] OR @lib:OneOrMore(ELT)
+}
+
+MACRO lib:All(ELT) {
+  rdf:first ELT;
+  rdf:rest [rdf:nil] OR @lib:All(ELT)
+}

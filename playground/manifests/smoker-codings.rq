@@ -8,7 +8,7 @@ SELECT ?obsId ?patient ?birthDate ?smokingAssessmentDate ?packYears
   BIND (NOW() AS ?now) # we'll need this later
 # BIND ("2023-10-27T08:17:56.279+02:00"^^xsd:dateTime AS ?now)
   {
-    SELECT ?patient ?birthDate ?smokingAssessmentDate
+    SELECT ?obsId ?patient ?smokingAssessmentDate
            ?packYears ?smokingYears ?packsPerDay ?dateQuit {
 
       # Observations with code of Tobacco smoking status
