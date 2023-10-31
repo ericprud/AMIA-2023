@@ -217,7 +217,6 @@ SELECT ?resource ?id ?div {
 
     if (!!$('#right textarea:visible').val()) {
       $('#right .run')
-        .prop('disabled', false)
         .on('click', this.rightPaneRunHandler.bind(this))
     }
     if (manifestEntry.sparqlQueries) {
@@ -234,7 +233,6 @@ SELECT ?resource ?id ?div {
     $('#right select').change();
     if (!!$('#right textarea:visible').val()) {
       $('#right .run')
-        .prop('disabled', false)
         .off()
         .on('click', this.rightPaneRunHandler.bind(this))
     }
@@ -271,11 +269,8 @@ SELECT ?resource ?id ?div {
 
   async executeQuery (sources, query) {
     const myEngine = new Comunica.QueryEngine();
-    const startTime = new Date();
-    $('button.run').text(`Started ${startTime}`);
     const typedStream = await myEngine.queryBindings(query, {sources});
     const asArray = await typedStream.toArray();
-    $('button.run').text(`Done ${(new Date() - startTime)/1000}`);
     const rows = asArray.map(
       b => Object.fromEntries(b.entries)
     );
@@ -305,7 +300,10 @@ SELECT ?resource ?id ?div {
     // const db = await this.parseDataPane();
     const db = new N3.Store();// await this.parseDataPane();
     this.sources.forEach(src => db.addQuads(src.db.getQuads()));
+    const startTime = new Date();
+    $('button.run').text(`Started ${startTime}`);
     const typed = await this.executeQuery([db], $('#right textarea.query').val());
+    $('button.run').text(`Done ${(new Date() - startTime)/1000}`);
     if (typed.length === 0) {
       $('#runResults').text('no results');
     } else {
