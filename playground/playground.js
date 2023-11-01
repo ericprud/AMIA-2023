@@ -14,7 +14,7 @@ class Playground {
 
   init () {
     document.addEventListener("DOMContentLoaded", this.onLoad.bind(this));
-    this.fhirPreprocessorReady = this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
+    this.fhirSchemaPromise = this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
     this.resource = null;
     this.id = null;
     this.sources = [];
@@ -26,10 +26,7 @@ class Playground {
     const resp = await fetch(url);
     if (!resp.ok)
       throw Error(`failed to load FHIR ShEx JSON from <${url}>:\n${await resp.text()}`);
-    const schema = await resp.json();
-    const processor = new Stuff.FhirPreprocessor.toRdf_rdvCh(
-      schema, {r: true, d: true, v: true, c: false, h: false}
-    );
+    return resp.json();
   }
 
   async onLoad () {
@@ -52,11 +49,23 @@ class Playground {
   }
 
   setupEvents () {
-    $('#left select').on('change', evt => {
-      if ($('#data select').val() === 'JSON' && $('#data textarea').val().length > 0) {
-        // const proprocessor = await this.fhirPreprocessorReady;
-        // const json = JSON.parse($('#data textarea').val());
-        // const db = proprocessor.preprocess(json);
+    $('#data .format').on('change', evt => {
+      if ($('#data .format').val() === 'Turtle' && $('#data textarea').val().length > 0) {
+        try {
+          const resource = JSON.parse($('#data textarea').val());
+          const xlator = new Stuff.FhirJsonToRdf();
+          const ttl = xlator.prettyPrint(resource);
+          $('#data textarea').val(ttl);
+          const url = $('#data textarea').data('url');
+          const src = this.sources.find(src => src.url.href === url.href) || {label: 'console', url};
+          src.db = null;
+          src.db = this.parseTurtle(url.href, ttl);
+        } catch (e) {
+          $('#text').addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
+        }
+      } else if ($('#data .format').val() === 'JSON' && $('#data textarea').val().length > 0) {
+        $('#text').empty().addClass('error').append($('<pre/>').text('Turtle to JSON not implemented'));
+        $('#data .format').val('Turtle');
       }
     });
 
@@ -180,20 +189,26 @@ class Playground {
   }
 
   async headerManifestSelect (evt, manifestEntry, base) {
-    $('#text').empty();
+    $('#text').removeClass('error').empty();
     try {
       const {data} = await this.genericManifestSelect(manifestEntry, base, {
         data: '#data textarea',
-        dataFormat: '#data select',
+        dataFormat: '#data .format',
         // sparqlQuery: '#right textarea.query',
       });
-      this.sources = data.map(({url, body}) => ({label: this.makeLabel(url), url, body, db: this.parseTurtle(url.href, body)}));
+      this.sources = data.map(({url, body}) => {
+        return {
+          label: this.makeLabel(url),
+          url,
+          body,
+          db: this.parseTurtle(url.href, body, manifestEntry.dataFormat),
+        };
+      } );
       const nowShowing = $('#data textarea').data('url').href;
       $('#curSources').empty().append(this.sources.map(src => $('<option/>', {value: src.url.href, selected: src.url.href === nowShowing}).text(src.label)));
       console.assert(this.sources.find(source => source.url.href === $('#data textarea').data('url').href));
     } catch (e) {
-      $('#data').addClass('error');
-      $('#data textarea').val(e?.stack || e?.message || e)
+      $('#text').addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
       return;
     }
     try {
@@ -260,7 +275,10 @@ SELECT ?resource ?id ?div {
     return this.parseTurtle(location.href, $('#data textarea').val());
   }
 
-  parseTurtle (baseIRI, text) {
+  parseTurtle (baseIRI, text, dataFormat = 'Turtle') {
+    if (dataFormat === 'JSON')
+      text = new Stuff.FhirJsonToRdf().prettyPrint(JSON.parse(text));
+
     const db = new N3.Store();
     const parser = new N3.Parser({baseIRI})
     db.addQuads(parser.parse(text));

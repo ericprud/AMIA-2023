@@ -134,4 +134,4 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
   ] ).
 
 # Triples not in FHIR Resource:
-<http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/Patient/smoker-1> a fhir:Patient.
+<../Patient/smoker-1> a fhir:Patient.
