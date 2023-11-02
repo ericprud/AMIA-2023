@@ -65,14 +65,16 @@ function transpose (graph) {
       switch (p.value) {
       case Ns.rdf + 'first':
         {
-          const appending = Object.values(lists).find(elt => elt.tail === sKey);
+          const appending = Object.keys(lists).find(key => lists[key].tail === sKey);
+          if (!ret[keyFor(o)])
+            ret[keyFor(o)] = {}
           if (appending) {
-            appending.elements.push(keyFor(o));
+            ret[appending].push(ret[keyFor(o)]);
           } else {
             lists[sKey] = {
-              elements: [keyFor(o)],
               // tail: undefined,
             }
+            ret[sKey] = [ret[keyFor(o)]];
           }
         }
         break;
@@ -83,8 +85,7 @@ function transpose (graph) {
             appending.closed = true;
             delete appending.tail;
           } else {
-            // const appending = Object.entries(lists).find(([head, elt]) => elt.tail === o.value);
-            appending.tail = keyFor(o); // lists[sKey].elements.push(keyFor(o)); // appending.elements.push(o.value);
+            appending.tail = keyFor(o);
           }
         }
         break;
@@ -98,13 +99,8 @@ function transpose (graph) {
         switch (o.termType) {
         case 'BlankNode':
           const oKey = keyFor(o);
-          if (oKey in lists) {
-            ret[sKey][p.value] = lists[oKey].elements;
-            // delete lists[oKey];
-          } else {
-            ret[sKey][p.value] = ret[oKey];
-            delete ret[oKey];
-          }
+          ret[sKey][p.value] = ret[oKey];
+          delete ret[oKey];
           break;
         case 'NamedNode':
           ret[sKey][p.value] = o.value;
