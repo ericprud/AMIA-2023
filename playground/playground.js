@@ -50,22 +50,26 @@ class Playground {
 
   setupEvents () {
     $('#data .format').on('change', evt => {
-      if ($('#data .format').val() === 'Turtle' && $('#data textarea').val().length > 0) {
-        try {
+      try {
+        const url = $('#data textarea').data('url');
+        if ($('#data .format').val() === 'Turtle' && $('#data textarea').val().length > 0) {
           const resource = JSON.parse($('#data textarea').val());
-          const xlator = new Stuff.FhirJsonToRdf();
+          const xlator = new Stuff.FhirJsonToTurtle();
           const ttl = xlator.prettyPrint(resource);
           $('#data textarea').val(ttl);
-          const url = $('#data textarea').data('url');
           const src = this.sources.find(src => src.url.href === url.href) || {label: 'console', url};
           src.db = null;
           src.db = this.parseTurtle(url.href, ttl);
-        } catch (e) {
-          $('#text').addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
+        } else if ($('#data .format').val() === 'JSON' && $('#data textarea').val().length > 0) {
+          const tz = new N3.Parser({baseIRI: url.href, format: 'text/turtle'}).parse($('#data textarea').val());
+          // console.log(tz.map(t => `${t.subject} ${t.predicate} ${t.object} .`))
+          const {resource, ignored} = new Stuff.FhirTurtleToJson().transpose(tz); // s1_s9
+          $('#data textarea').val(JSON.stringify(resource, null, 2));
+          // $('#text').empty().addClass('error').append($('<pre/>').text('Turtle to JSON not implemented'));
+          // $('#data .format').val('Turtle');
         }
-      } else if ($('#data .format').val() === 'JSON' && $('#data textarea').val().length > 0) {
-        $('#text').empty().addClass('error').append($('<pre/>').text('Turtle to JSON not implemented'));
-        $('#data .format').val('Turtle');
+      } catch (e) {
+        $('#text').empty().addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
       }
     });
 
@@ -277,7 +281,7 @@ SELECT ?resource ?id ?div {
 
   parseTurtle (baseIRI, text, dataFormat = 'Turtle') {
     if (dataFormat === 'JSON')
-      text = new Stuff.FhirJsonToRdf().prettyPrint(JSON.parse(text));
+      text = new Stuff.FhirJsonToTurtle().prettyPrint(JSON.parse(text));
 
     const db = new N3.Store();
     const parser = new N3.Parser({baseIRI})
@@ -395,7 +399,7 @@ SELECT ?resource ?id ?div {
         // loadController: new ProgressLoadController(statusElt, [$('#right textarea.validate').data('url').href]),
       }
     );
-    const validator = new Stuff.ShExValidator.ShExValidator(
+    const validator = new Stuff.ShExValidator(
       loaded.schema,
       Stuff.RdfJsDb.ctor(loaded.data),
       {
@@ -407,7 +411,7 @@ SELECT ?resource ?id ?div {
     statusElt.empty().append('<p/>').text('validating');
     const res = validator.validateNodeShapePair(
       this.resource, // node
-      Stuff.ShExValidator.ShExValidator.Start, // shape
+      Stuff.ShExValidator.Start, // shape
     );
     console.log('Validation results:', res);
     statusElt.empty().append($('<pre/>', {"class": !!res.errors ? 'error' : 'success'}).text(JSON.stringify(res, null, 2)));

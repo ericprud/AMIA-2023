@@ -11437,10 +11437,10 @@
 
 	var neighborhoodRdfjsExports = neighborhoodRdfjs.exports;
 
-	var FhirJsonToRdf = {exports: {}};
+	var FhirJsonToTurtle = {exports: {}};
 
 	(function (module) {
-		class FhirJsonToRdf {
+		class FhirJsonToTurtle {
 
 		  static parseDateType (x) {
 		    const m = x.match(/([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\.[0-9]{1,9})?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?/);
@@ -11455,15 +11455,15 @@
 
 		  static Types = {
 		    anyURI  : { label: 'anyURI'  ,                                         },
-		    dateTime: { label: 'dateTime', microparse: FhirJsonToRdf.parseDateType },
-		    date    : { label: 'date'    , microparse: FhirJsonToRdf.parseDateType },
+		    dateTime: { label: 'dateTime', microparse: FhirJsonToTurtle.parseDateType },
+		    date    : { label: 'date'    , microparse: FhirJsonToTurtle.parseDateType },
 		  }
 		  static Typed = {
-		    lastUpdated: FhirJsonToRdf.Types.dateTime,
-		    effectiveDateTime: FhirJsonToRdf.Types.dateTime,
-		    issued: FhirJsonToRdf.Types.dateTime,
-		    source: FhirJsonToRdf.Types.anyURI,
-		    system: FhirJsonToRdf.Types.anyURI,
+		    lastUpdated: FhirJsonToTurtle.Types.dateTime,
+		    effectiveDateTime: FhirJsonToTurtle.Types.dateTime,
+		    issued: FhirJsonToTurtle.Types.dateTime,
+		    source: FhirJsonToTurtle.Types.anyURI,
+		    system: FhirJsonToTurtle.Types.anyURI,
 		  };
 
 		  static Ns = {
@@ -11486,7 +11486,7 @@
 		    // PREFIXes
 		    const out = [];
 		    for (const p of namespacePrefixes) {
-		      out.push(`PREFIX ${p}: <${FhirJsonToRdf.Ns[p]}>`);
+		      out.push(`PREFIX ${p}: <${FhirJsonToTurtle.Ns[p]}>`);
 		    }
 		    out.push('');
 
@@ -11520,7 +11520,7 @@
 		        ret.push(`${leader}fhir:value [ fhir:v ${value} ]${punct}`);
 		      } else if (typeof value === 'string') {
 		        if (key === 'system') {
-		          const base = FhirJsonToRdf.SystemBases[value];
+		          const base = FhirJsonToTurtle.SystemBases[value];
 		          if (base)
 		            ret.push(`${leader}a <${base}${obj.code}>;`);
 		        } else if (key === 'reference') {
@@ -11529,7 +11529,7 @@
 		          ret.push(`${leader}fhir:link <../${value}>;`);
 		        }
 		        let valueStr = null;
-		        const typed = FhirJsonToRdf.Typed[key];
+		        const typed = FhirJsonToTurtle.Typed[key];
 		        if (!typed) {
 		          valueStr = this.quote(value);
 		        } else {
@@ -11567,18 +11567,141 @@
 		  }
 		}
 
-		module.exports = {FhirJsonToRdf}; 
-	} (FhirJsonToRdf));
+		module.exports = {FhirJsonToTurtle}; 
+	} (FhirJsonToTurtle));
 
-	var FhirJsonToRdfExports = FhirJsonToRdf.exports;
+	var FhirJsonToTurtleExports = FhirJsonToTurtle.exports;
+
+	var FhirTurtleToJson = {exports: {}};
+
+	(function (module) {
+		class FhirTurtleToJson {
+		  static Ns = {
+		    fhir: 'http://hl7.org/fhir/',
+		    rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		    xsd: "http://www.w3.org/2001/XMLSchema#",
+		  };
+
+		  static ROOT = '<root>';
+
+		  transpose (graph) {
+		    const ret = {};
+		    const ignored = [];
+		    const lists = {};
+		    const literals = {};
+		    let rootTerm = null;
+		    let rootType = null;
+		    for (let target of graph) {
+		      const {subject: s, predicate: p, object: o} = target;
+		      const sKey = this.keyFor(s);
+		      if (sKey === FhirTurtleToJson.ROOT && rootTerm && !rootTerm.equals(s)) {
+		        ignored.push(target);
+		      } else {
+		        if (sKey === FhirTurtleToJson.ROOT && !rootTerm)
+		          rootTerm = s;
+
+		        switch (p.value) {
+		        case FhirTurtleToJson.Ns.rdf + 'first':
+		          {
+		            const appending = Object.keys(lists).find(key => lists[key].tail === sKey);
+		            if (!ret[this.keyFor(o)])
+		              ret[this.keyFor(o)] = o.termType === 'BlankNode' ? {} : this.jsonize(o);
+		            if (appending) {
+		              ret[appending].push(ret[this.keyFor(o)]);
+		            } else {
+		              lists[sKey] = {
+		                // tail: undefined,
+		              };
+		              ret[sKey] = [ret[this.keyFor(o)]];
+		            }
+		          }
+		          break;
+		        case FhirTurtleToJson.Ns.rdf + 'rest':
+		          {
+		            const appending = Object.values(lists).find(elt => elt.tail === sKey) || lists[sKey];
+		            if (o.termType === 'NamedNode' && o.value === FhirTurtleToJson.Ns.rdf + 'nil') {
+		              appending.closed = true;
+		              delete appending.tail;
+		            } else {
+		              appending.tail = this.keyFor(o);
+		            }
+		          }
+		          break;
+		        case FhirTurtleToJson.Ns.rdf + 'type':
+		          rootType = o.value.substring(FhirTurtleToJson.Ns.fhir.length);
+		          break
+		        default:
+		          const property = p.value.substring(FhirTurtleToJson.Ns.fhir.length);
+		          switch (property) {
+		          case 'v':
+		            literals[sKey] = o;
+		            break;
+		          case 'link':
+		          case 'nodeRole':
+		            break;
+		          default:
+		            let o2 = o;
+		            if (o.termType === 'BlankNode' && this.keyFor(o) in literals) {
+		              o2 = literals[this.keyFor(o)];
+		              delete literals[this.keyFor(o)];
+		            }
+		            if (!ret[sKey]) {
+		              ret[sKey] = {};
+		              // if (s.termType === 'NamedNode') {
+		              //   ret[sKey].id = s.value;
+		              // }
+		            }
+		            switch (o2.termType) {
+		            case 'BlankNode':
+		              const oKey = this.keyFor(o2);
+		              ret[sKey][property] = ret[oKey];
+		              delete ret[oKey];
+		              break;
+		            case 'NamedNode':
+		              ret[sKey][property] = o2.value;
+		              break;
+		            case 'Literal':
+		              ret[sKey][property] = this.jsonize(o2);
+		              break;
+		            default:
+		              throw Error(`expected RdfJs triple or quad; got ${JSON.stringify(target)}`);
+		            }
+		          }
+		        }
+		      }
+		    }
+		    return {resource: Object.assign({resourceType: rootType}, ret[FhirTurtleToJson.ROOT]), ignored};
+		  }
+
+		  keyFor (term) {
+		    return term.termType === 'NamedNode' ? FhirTurtleToJson.ROOT : term.value;
+		  }
+
+		  jsonize (term) {
+		    if (!term.datatype.value.startsWith(FhirTurtleToJson.Ns.xsd))
+		      throw Error(`no support for non-XSD datatype ${term.datatype.value}`);
+		    switch (term.datatype.value.substring(FhirTurtleToJson.Ns.xsd.length)) {
+		    case 'integer': return parseInt(term.value);
+		    case 'decimal': return parseFloat(term.value);
+		    case 'boolean': return term.value === 'true';
+		    default: return term.value;
+		    }
+		  }
+		}
+
+		module.exports = {FhirTurtleToJson}; 
+	} (FhirTurtleToJson));
+
+	var FhirTurtleToJsonExports = FhirTurtleToJson.exports;
 
 	var stuff = {
 	  JsYaml: jsYaml,
 	  RdfDataFactory: rdfDataFactory,
 	  ShExLoader: shexLoaderExports,
-	  ShExValidator: shexValidator,
+	  ShExValidator: shexValidator.ShExValidator,
 	  RdfJsDb: neighborhoodRdfjsExports,
-	  FhirJsonToRdf: FhirJsonToRdfExports.FhirJsonToRdf,
+	  FhirJsonToTurtle: FhirJsonToTurtleExports.FhirJsonToTurtle,
+	  FhirTurtleToJson: FhirTurtleToJsonExports.FhirTurtleToJson,
 	  // SparqlRdfjs: require('@comunica/query-sparql-rdfjs'),
 	};
 

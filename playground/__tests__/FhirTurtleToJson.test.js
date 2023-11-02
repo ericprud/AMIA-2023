@@ -1,5 +1,6 @@
 
 const N3 = require('n3');
+const {FhirTurtleToJson} = require('../FhirTurtleToJson');
 
 let tStrs0 = [
   /*0*/ "_:b34 <p3> 3 .",
@@ -12,113 +13,6 @@ let tStrs0 = [
   /*7*/ "<s1> <p6> _:b78 .",
   /*8*/ "<s9> <p9> 9 .",
 ];
-
-const Ns = {
-  fhir: 'http://hl7.org/fhir/',
-  rdf: "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-  xsd: "http://www.w3.org/2001/XMLSchema#",
-};
-
-const ROOT = '<root>';
-
-function transpose (graph) {
-  const ret = {};
-  const ignored = [];
-  const lists = {};
-  const literals = {};
-  let rootTerm = null;
-  for (let target of graph) {
-    const {subject: s, predicate: p, object: o} = target;
-    const sKey = keyFor(s);
-    if (sKey === ROOT && rootTerm && !rootTerm.equals(s)) {
-      ignored.push(target);
-    } else {
-      if (sKey === ROOT && !rootTerm)
-        rootTerm = s;
-
-      switch (p.value) {
-      case Ns.rdf + 'first':
-        {
-          const appending = Object.keys(lists).find(key => lists[key].tail === sKey);
-          if (!ret[keyFor(o)])
-            ret[keyFor(o)] = o.termType === 'BlankNode' ? {} : jsonize(o)
-          if (appending) {
-            ret[appending].push(ret[keyFor(o)]);
-          } else {
-            lists[sKey] = {
-              // tail: undefined,
-            }
-            ret[sKey] = [ret[keyFor(o)]];
-          }
-        }
-        break;
-      case Ns.rdf + 'rest':
-        {
-          const appending = Object.values(lists).find(elt => elt.tail === sKey) || lists[sKey];
-          if (o.termType === 'NamedNode' && o.value === Ns.rdf + 'nil') {
-            appending.closed = true;
-            delete appending.tail;
-          } else {
-            appending.tail = keyFor(o);
-          }
-        }
-        break;
-      default:
-        const property = p.value.substring(Ns.fhir.length);
-        switch (property) {
-        case 'v':
-          literals[sKey] = o;
-          break;
-        case 'link':
-          break;
-        default:
-          let o2 = o;
-          if (o.termType === 'BlankNode' && keyFor(o) in literals) {
-            o2 = literals[keyFor(o)];
-            delete literals[keyFor(o)];
-          }
-          if (!ret[sKey]) {
-            ret[sKey] = {}
-            // if (s.termType === 'NamedNode') {
-            //   ret[sKey].id = s.value;
-            // }
-          }
-          switch (o2.termType) {
-          case 'BlankNode':
-            const oKey = keyFor(o2);
-            ret[sKey][property] = ret[oKey];
-            delete ret[oKey];
-            break;
-          case 'NamedNode':
-            ret[sKey][property] = o2.value;
-            break;
-          case 'Literal':
-            ret[sKey][property] = jsonize(o2);
-            break;
-          default:
-            throw Error(`expected RdfJs triple or quad; got ${JSON.stringify(target)}`);
-          }
-        }
-      }
-    }
-  }
-  return {resource: ret[ROOT], ignored};
-}
-
-function keyFor (term) {
-  return term.termType === 'NamedNode' ? ROOT : term.value;
-}
-
-function jsonize (term) {
-  if (!term.datatype.value.startsWith(Ns.xsd))
-    throw Error(`no support for non-XSD datatype ${term.datatype.value}`);
-  switch (term.datatype.value.substring(Ns.xsd.length)) {
-  case 'integer': return parseInt(term.value);
-  case 'decimal': return parseFloat(term.value);
-  case 'boolean': return term.value === 'true';
-  default: return term.value;
-  }
-}
 
 let goal = {
   s1: {
@@ -217,7 +111,8 @@ const NsTerm = "http://terminology.hl7.org/CodeSystem/";
 let turtle = `
 PREFIX fhir: <http://hl7.org/fhir/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-<smoker-1_smoking-2023-06-20>
+<smoker-1_smoking-2023-06-20> a fhir:Observation ;
+  fhir:nodeRole fhir:treeRoot ;
   fhir:id [ fhir:v "smoker-1_smoking-2023-06-20" ]; # _:n3-0
   fhir:category ( # (_:n3-1, _:n3-7, _:n3-8)
     [ fhir:coding  ( # _:n3-2 fhir:coding (_:n3-3)
@@ -259,15 +154,45 @@ let tStrs = [
   /*21*/ '<../Patient/smoker-1> rdf:type fhir:Patient .'
 ];
 
+describe('FhirTurtleToJson', () => {
 
-const tz = new N3.Parser({baseIRI: 'http://a.example/Observation/', format: 'text/turtle'})
-      .parse(turtle);
-blessTerms(tz, {toString: termToString});
-// console.log(tz.map(t => `${t.subject} ${t.predicate} ${t.object} .`))
-const {resource, ignored} = transpose(tz); // s1_s9
-for (const ign of ignored)
-  console.error(`ignoring ${ign.subject.toString()} ${ign.predicate.toString()} ${ign.object.toString()} .`);
-console.log(JSON.stringify(resource, null, 2));
+  it('should parse an Observation', () => {
+    const tz = new N3.Parser({baseIRI: 'http://a.example/Observation/', format: 'text/turtle'})
+          .parse(turtle);
+    blessTerms(tz, {toString: termToString});
+    // console.log(tz.map(t => `${t.subject} ${t.predicate} ${t.object} .`))
+    const {resource, ignored} = new FhirTurtleToJson().transpose(tz); // s1_s9
+    // for (const ign of ignored)
+    //   console.error(`ignoring ${ign.subject.toString()} ${ign.predicate.toString()} ${ign.object.toString()} .`);
+    expect(ignored.map(
+      ign => `ignoring ${ign.subject.toString()} ${ign.predicate.toString()} ${ign.object.toString()} .`
+    )).toEqual([
+      'ignoring <http://a.example/Patient/smoker-1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://hl7.org/fhir/Patient> .'
+    ]);
+    // console.log(JSON.stringify(resource, null, 2));
+    expect(resource).toEqual({
+      "resourceType": "Observation",
+      "id": "smoker-1_smoking-2023-06-20",
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        },
+        "some literal",
+        {
+          "text": "boogers"
+        }
+      ],
+      "subject": {
+        "reference": "Patient/smoker-1"
+      }
+    });
+  })
+});
 
 function blessTerms (tz, fz) {
   for (const triple of tz)

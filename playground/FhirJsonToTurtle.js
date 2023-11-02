@@ -1,4 +1,4 @@
-class FhirJsonToRdf {
+class FhirJsonToTurtle {
 
   static parseDateType (x) {
     const m = x.match(/([0-9]([0-9]([0-9][1-9]|[1-9]0)|[1-9]00)|[1-9]000)(-(0[1-9]|1[0-2])(-(0[1-9]|[1-2][0-9]|3[0-1])(T([01][0-9]|2[0-3]):[0-5][0-9]:([0-5][0-9]|60)(\.[0-9]{1,9})?)?)?(Z|(\+|-)((0[0-9]|1[0-3]):[0-5][0-9]|14:00)?)?)?/);
@@ -13,15 +13,15 @@ class FhirJsonToRdf {
 
   static Types = {
     anyURI  : { label: 'anyURI'  ,                                         },
-    dateTime: { label: 'dateTime', microparse: FhirJsonToRdf.parseDateType },
-    date    : { label: 'date'    , microparse: FhirJsonToRdf.parseDateType },
+    dateTime: { label: 'dateTime', microparse: FhirJsonToTurtle.parseDateType },
+    date    : { label: 'date'    , microparse: FhirJsonToTurtle.parseDateType },
   }
   static Typed = {
-    lastUpdated: FhirJsonToRdf.Types.dateTime,
-    effectiveDateTime: FhirJsonToRdf.Types.dateTime,
-    issued: FhirJsonToRdf.Types.dateTime,
-    source: FhirJsonToRdf.Types.anyURI,
-    system: FhirJsonToRdf.Types.anyURI,
+    lastUpdated: FhirJsonToTurtle.Types.dateTime,
+    effectiveDateTime: FhirJsonToTurtle.Types.dateTime,
+    issued: FhirJsonToTurtle.Types.dateTime,
+    source: FhirJsonToTurtle.Types.anyURI,
+    system: FhirJsonToTurtle.Types.anyURI,
   };
 
   static Ns = {
@@ -44,7 +44,7 @@ class FhirJsonToRdf {
     // PREFIXes
     const out = [];
     for (const p of namespacePrefixes) {
-      out.push(`PREFIX ${p}: <${FhirJsonToRdf.Ns[p]}>`)
+      out.push(`PREFIX ${p}: <${FhirJsonToTurtle.Ns[p]}>`)
     }
     out.push('');
 
@@ -80,7 +80,7 @@ class FhirJsonToRdf {
         ret.push(`${leader}fhir:value [ fhir:v ${value} ]${punct}`)
       } else if (typeof value === 'string') {
         if (key === 'system') {
-          const base = FhirJsonToRdf.SystemBases[value];
+          const base = FhirJsonToTurtle.SystemBases[value];
           if (base)
             ret.push(`${leader}a <${base}${obj.code}>;`)
         } else if (key === 'reference') {
@@ -89,7 +89,7 @@ class FhirJsonToRdf {
           ret.push(`${leader}fhir:link <../${value}>;`)
         }
         let valueStr = null;
-        const typed = FhirJsonToRdf.Typed[key];
+        const typed = FhirJsonToTurtle.Typed[key];
         if (!typed) {
           valueStr = this.quote(value);
         } else {
@@ -128,4 +128,4 @@ class FhirJsonToRdf {
 }
 
 if (typeof module !== undefined)
-  module.exports = {FhirJsonToRdf};
+  module.exports = {FhirJsonToTurtle};
