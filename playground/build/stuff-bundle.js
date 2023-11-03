@@ -11634,7 +11634,19 @@
 		          const property = p.value.substring(FhirTurtleToJson.Ns.fhir.length);
 		          switch (property) {
 		          case 'v':
-		            literals[sKey] = o;
+		            if (sKey in ret) {
+		              const lookFor = ret[sKey];
+		              const referringList = Object.values(ret).find(x => Array.isArray(x) && x.indexOf(lookFor) !== -1);
+		              if (referringList) {
+		                const idx = referringList.indexOf(lookFor);
+		                referringList.splice(idx, 1, this.jsonize(o));
+		                delete ret[sKey];
+		              } else {
+		                ret[sKey] = this.jsonize(o);
+		              }
+		            } else {
+		              literals[sKey] = o;
+		            }
 		            break;
 		          case 'link':
 		          case 'nodeRole':

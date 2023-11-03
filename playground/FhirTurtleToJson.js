@@ -1,3 +1,7 @@
+/** Map FHIR Turtle to FHIR JSON.
+ * This counts on the order of triples parsed by n3@1.17.1 (2023-11-03).
+ */
+
 class FhirTurtleToJson {
   static Ns = {
     fhir: 'http://hl7.org/fhir/',
@@ -7,6 +11,10 @@ class FhirTurtleToJson {
 
   static ROOT = '<root>';
 
+  /** Map the ordered triples in `graph` to a FHIR JSON Resource object.
+   * graph: specifically-ordered triples parsed by n3@1.17.1
+   * @returns: js structure equivalent to the FHIR JSON for that Resource.
+   */
   transpose (graph) {
     const ret = {};
     const ignored = [];
@@ -16,13 +24,16 @@ class FhirTurtleToJson {
     let rootType = null;
     for (let target of graph) {
       const {subject: s, predicate: p, object: o} = target;
+
+       // key in ret and lists objects; will be ROOT for NamedNodes.
       const sKey = this.keyFor(s);
       if (sKey === FhirTurtleToJson.ROOT && rootTerm && !rootTerm.equals(s)) {
-        ignored.push(target);
+        ignored.push(target); // duplicate info like e.g. <../Patient/smoker-1> a fhir:Patient
       } else {
         if (sKey === FhirTurtleToJson.ROOT && !rootTerm)
           rootTerm = s;
 
+        // Treatment for lists and types
         switch (p.value) {
         case FhirTurtleToJson.Ns.rdf + 'first':
           {
@@ -54,25 +65,44 @@ class FhirTurtleToJson {
           rootType = o.value.substring(FhirTurtleToJson.Ns.fhir.length);
           break
         default:
+          // Treatment for fhir predicates.
           const property = p.value.substring(FhirTurtleToJson.Ns.fhir.length);
           switch (property) {
           case 'v':
-            literals[sKey] = o;
+            // The nested object S fhir:foo [fhir:v X] gets simplified to S = {foo: X} in JSON
+            if (sKey in ret) {
+              const lookFor = ret[sKey];
+              // See if a preceding lists eleemnts references s.
+              const referringList = Object.values(ret).find(x => Array.isArray(x) && x.indexOf(lookFor) !== -1);
+              if (referringList) {
+                // Special handling if there's a previous reference.
+                const idx = referringList.indexOf(lookFor);
+                referringList.splice(idx, 1, this.jsonize(o));
+                delete ret[sKey];
+              } else {
+                // o is a new object which will be referred to in a triple whose object is the current subject.
+                ret[sKey] = this.jsonize(o);
+              }
+            } else {
+              // Store in literals, which is referenced by following triple.
+              literals[sKey] = o;
+            }
             break;
           case 'link':
           case 'nodeRole':
+            // Ignore links and nodeRoles
             break;
           default:
             let o2 = o;
+            // o2 may be a previously-stored literal
             if (o.termType === 'BlankNode' && this.keyFor(o) in literals) {
               o2 = literals[this.keyFor(o)];
               delete literals[this.keyFor(o)];
             }
+
+            // Ensure theres an object for attr/values
             if (!ret[sKey]) {
               ret[sKey] = {}
-              // if (s.termType === 'NamedNode') {
-              //   ret[sKey].id = s.value;
-              // }
             }
             switch (o2.termType) {
             case 'BlankNode':
@@ -93,13 +123,20 @@ class FhirTurtleToJson {
         }
       }
     }
+
+    // Ignore any lingering ret elements which are a byproduct of lists.
     return {resource: Object.assign({resourceType: rootType}, ret[FhirTurtleToJson.ROOT]), ignored};
   }
 
+  /** How an RDF term appears in the ret and lists objects.
+   */
   keyFor (term) {
+    // term.value is good enough 'cause they're all BNodes
     return term.termType === 'NamedNode' ? FhirTurtleToJson.ROOT : term.value;
   }
 
+  /** Map values in the RDF graph to their JSON counterpart.
+   */
   jsonize (term) {
     if (!term.datatype.value.startsWith(FhirTurtleToJson.Ns.xsd))
       throw Error(`no support for non-XSD datatype ${term.datatype.value}`);
