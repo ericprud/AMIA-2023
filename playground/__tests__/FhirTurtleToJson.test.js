@@ -1,6 +1,7 @@
 
 const N3 = require('n3');
 const {FhirTurtleToJson} = require('../FhirTurtleToJson');
+const {FhirJsonToTurtle} = require('../FhirJsonToTurtle');
 
 let tStrs0 = [
   /*0*/ "_:b34 <p3> 3 .",
@@ -108,7 +109,32 @@ let s1_s9 = [
 blessTerms(s1_s9, {equals, toString: termToString});
 
 const NsTerm = "http://terminology.hl7.org/CodeSystem/";
-let turtle = `
+const Tests = [
+  {
+    title: "smoking Observation excerpt",
+    json: {
+      "resourceType": "Observation",
+      "id": "smoker-1_smoking-2023-06-20",
+      "category": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+              "code": "social-history"
+            }
+          ]
+        },
+        "some literal",
+        {
+          "text": "boogers"
+        }
+      ],
+      "subject": {
+        "reference": "Patient/smoker-1"
+      }
+    },
+    baseIRI: 'http://a.example/Observation/',
+    turtle : `
 PREFIX fhir: <http://hl7.org/fhir/>
 PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 <smoker-1_smoking-2023-06-20> a fhir:Observation ;
@@ -127,7 +153,8 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     fhir:reference [ fhir:v "Patient/smoker-1" ]                                  # _:n3-13 fhir:v "..."
   ] .                                                                        # _:n3-7 fhir:link 7; fhir:reference 8
 <../Patient/smoker-1> a fhir:Patient .
-`;
+` }
+];
 
 let tStrs = [
   /* 0*/ '<smoker-1_smoking-2023-06-20> a fhir:Observation .',
@@ -161,8 +188,8 @@ let tStrs = [
 describe('FhirTurtleToJson', () => {
 
   it('should parse an Observation', () => {
-    const tz = new N3.Parser({baseIRI: 'http://a.example/Observation/', format: 'text/turtle'})
-          .parse(turtle);
+    const tz = new N3.Parser({baseIRI: Tests[0].baseIRI, format: 'text/turtle'})
+          .parse(Tests[0].turtle);
     blessTerms(tz, {toString: termToString});
     // console.log(tz.map(t => `${t.subject} ${t.predicate} ${t.object} .`))
     const {resource, ignored} = new FhirTurtleToJson().transpose(tz); // s1_s9
@@ -174,28 +201,25 @@ describe('FhirTurtleToJson', () => {
       'ignoring <http://a.example/Patient/smoker-1> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://hl7.org/fhir/Patient> .'
     ]);
     // console.log(JSON.stringify(resource, null, 2));
-    expect(resource).toEqual({
-      "resourceType": "Observation",
-      "id": "smoker-1_smoking-2023-06-20",
-      "category": [
-        {
-          "coding": [
-            {
-              "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-              "code": "social-history"
-            }
-          ]
-        },
-        "some literal",
-        {
-          "text": "boogers"
-        }
-      ],
-      "subject": {
-        "reference": "Patient/smoker-1"
-      }
-    });
+    expect(resource).toEqual(Tests[0].json);
   })
+
+  describe('round-trip tests', () => {
+    for (const t of Tests)
+      it(t.title, () => {
+        const parser = new N3.Parser({
+          baseIRI: t.baseIRI,
+          format: 'text/turtle'
+        });
+        const j2t = new FhirJsonToTurtle();
+        const t2j = new FhirTurtleToJson();
+        const resourceIn = t.json;
+        const turtle = j2t.prettyPrint(resourceIn);
+        const tz = parser.parse(turtle);
+        const {resource: resourceOut, ignored} = t2j.transpose(tz);
+        expect(resourceOut).toEqual(resourceIn);
+      });
+  });
 });
 
 function blessTerms (tz, fz) {

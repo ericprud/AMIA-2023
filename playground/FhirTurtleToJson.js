@@ -62,7 +62,8 @@ class FhirTurtleToJson {
           }
           break;
         case FhirTurtleToJson.Ns.rdf + 'type':
-          rootType = o.value.substring(FhirTurtleToJson.Ns.fhir.length);
+          if (sKey === FhirTurtleToJson.ROOT)
+            rootType = o.value.substring(FhirTurtleToJson.Ns.fhir.length);
           break
         default:
           // Treatment for fhir predicates.
