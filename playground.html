@@ -67,7 +67,7 @@
       .warning { background-color: #dd7; }
       .error   { background-color: #e77; }
     </style>
-    <script src="playground/playground.js"></script>
+    <script type="module" src="playground/playground.js"></script>
     <script src="playground/build/stuff-bundle.js"></script>
     <script src="//code.jquery.com/jquery-3.7.1.slim.min.js"></script>
     <script src="//unpkg.com/n3/browser/n3.min.js"></script>
@@ -101,6 +101,7 @@
           <select>
             <option value="query">SPARQL Query</option>
             <option value="validate">ShEx Validation</option>
+            <option value="fhir">FHIR Query</option>
           </select>
           <ul class="manifest"></ul>
         </div>

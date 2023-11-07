@@ -12,16 +12,20 @@
   "license": "ISC",
   "dependencies": {
     "@comunica/query-sparql-rdfjs": "^2.10.0",
-    "@shexjs/loader": "^1.0.0-alpha.27",
-    "@shexjs/neighborhood-rdfjs": "^1.0.0-alpha.27",
-    "@shexjs/validator": "^1.0.0-alpha.27",
+    "@shexjs/loader": "^1.0.0-alpha.28",
+    "@shexjs/neighborhood-rdfjs": "^1.0.0-alpha.28",
+    "@shexjs/validator": "^1.0.0-alpha.28",
     "js-yaml": "^4.1.0",
     "n3": "^1.17.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
+    "esbuild": "^0.19.5",
     "jest": "^29.7.0",
-    "rollup": "^4.1.4"
+    "rollup": "^4.1.4",
+    "rollup-plugin-dts": "^6.1.0",
+    "rollup-plugin-esbuild": "^6.1.0",
+    "ts-node": "^10.9.1"
   }
 }
