@@ -1,0 +1,49 @@
+---
+- schemaLabel: start
+  schemaURL: schemas/Patient-start.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: "1"
+  schemaURL: schemas/Patient-1.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: "2"
+  schemaURL: schemas/Patient-2.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: type hierarchy
+  schemaURL: schemas/Patient-typeHierarchy.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: flattened hierarchy
+  schemaURL: schemas/Patient-flattenedHierarchy.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: final
+  schemaURL: schemas/Patient-final.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+

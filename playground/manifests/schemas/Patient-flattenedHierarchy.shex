@@ -1,0 +1,36 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<#Patient> {
+  fhir:id { fhir:v xsd:string };
+  fhir:active @<#boolean> ;
+  fhir:gender @<#gender>? ;
+  fhir:birthDate @<#date> ;
+}
+
+<#boolean> { fhir:v ["true" "false"] }
+
+<#gender> @<#code> AND {
+  fhir:v ["male" "female" "other" "unknown"]
+}
+
+<#date> {
+  fhir:v xsd:date OR xsd:gYearMonth OR xsd:gYear
+}
+
+<#Element> CLOSED {
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id @<#string>?;
+#   fhir:extension @<OneOrMore_Extension>?;
+}
+
+<#code> EXTENDS @<#Element> CLOSED {
+    a [fhir:code]?;
+    fhir:v xsd:token OR xsd:string ?;
+}
+
+<#string> EXTENDS @<#Element> CLOSED {
+    a [fhir:string]?;
+    fhir:v xsd:string MAXLENGTH 1048576?;
+}

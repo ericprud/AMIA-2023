@@ -1,0 +1,58 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+/** sample Patient schema
+ * includes DataType hierarchy
+ */
+
+<#Patient> {
+  fhir:id { fhir:v xsd:string };
+  fhir:active @<#boolean> ;
+  fhir:gender @<#gender>? ;
+  fhir:birthDate @<#date> ;
+}
+
+<#boolean> { fhir:v ["true" "false"] }
+
+<#gender> @<#code> AND {
+  fhir:v @fhirvs:administrative-gender
+}
+
+<#date> {
+  fhir:v xsd:date OR xsd:gYearMonth OR xsd:gYear
+}
+
+# Base for all types and resources
+<#Base> CLOSED {
+    a [fhir:Base]?;
+    fhir:nodeRole [fhir:treeRoot]?;
+}  
+
+# Base for all elements
+<#Element> EXTENDS @<#Base> CLOSED {
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id @<#string>?;                     # Unique id for inter-element referencing 
+#   fhir:extension @<OneOrMore_Extension>?;  # Additional content defined by implementations 
+}
+
+# Reuseable Types
+<#DataType> EXTENDS @<#Element> CLOSED { }
+
+# Parent type for DataTypes with a simple value
+<#PrimitiveType> EXTENDS @<#DataType> CLOSED { }  
+
+# Primitive Type code
+<#code> EXTENDS @<#PrimitiveType> CLOSED {
+    a [fhir:code]?;
+    fhir:v xsd:token OR xsd:string ?;
+}
+
+# Primitive Type string
+<#string> EXTENDS @<#PrimitiveType> CLOSED {
+    a [fhir:string]?;
+    fhir:v xsd:string MAXLENGTH 1048576?;   # Primitive value for string
+}
+
+# The gender of a person used for administrative purposes.
+fhirvs:administrative-gender ["male" "female" "other" "unknown"]
