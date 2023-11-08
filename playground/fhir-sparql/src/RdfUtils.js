@@ -8,6 +8,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 const SparqlParser = new sparql.Parser();
+const SparqlGenerator = new sparql.Generator();
 class RdfUtils {
   /** find triples matching (s, p, o)
    * could move to Bgp, but is always invokes on a List
@@ -182,8 +183,8 @@ class SparqlQuery {
     this.where = this.findBgps(query).map((bgp) => Bgp.blessSparqlJs(bgp));
   }
   findBgps(q) {
-    if (q.type !== "query" || q.queryType !== "SELECT")
-      throw Error(q);
+    if (q.type !== "query")
+      throw Error(`Expected type: "query"; got ${JSON.stringify(q)}`);
     return q.where.reduce((acc, elt) => {
       if (elt.type === "group")
         return acc.concat(this.findBgps(elt.patterns[0]));
@@ -201,6 +202,15 @@ class SparqlQuery {
   }
   static parse(text) {
     return new SparqlQuery(SparqlParser.parse(text));
+  }
+  static selectStar(bgp) {
+    return SparqlGenerator.stringify({
+      "type": "query",
+      "prefixes": {},
+      "queryType": "SELECT",
+      "variables": [{ termType: "Wildcard" }],
+      "where": bgp
+    });
   }
 }
 

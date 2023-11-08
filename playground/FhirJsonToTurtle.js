@@ -67,7 +67,7 @@ class FhirJsonToTurtle {
   visit (leader, obj, skips, outer, types) {
     const ret = [];
     const entries = Object.entries(obj);
-    for (const entryNo in entries) {
+    for (let entryNo = 0; entryNo < entries.length; ++entryNo) {
       const [key, value] = entries[entryNo];
       const punct = entryNo < entries.length - 1
             ? ';'

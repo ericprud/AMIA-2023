@@ -4,7 +4,7 @@
   "description": "",
   "main": "./workground.js",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && rollup -c rollup-fhir-sparql.config.js",
     "test": "jest"
   },
   "keywords": [],

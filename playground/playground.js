@@ -2,7 +2,10 @@ const MANIFEST = {
   param: 'manifest',
   default: 'playground/manifests/manifest.yaml'
 };
-const PARSE_TIMEOUT = 400; // wait 1 second before re-parsing data
+const PARSE_TIMEOUT = 400; // wait after keystroke before re-parsing data
+
+import {FhirSparql} from './fhir-sparql/src/FhirSparql.js';
+import {SparqlQuery} from './fhir-sparql/src/RdfUtils';
 
 class TooFewResultsError extends Error {}
 class TooManyResultsError extends Error {}
@@ -10,15 +13,21 @@ class TooManyResultsError extends Error {}
 class Playground {
 
   constructor () {
-  }
-
-  init () {
-    document.addEventListener("DOMContentLoaded", this.onLoad.bind(this));
-    this.fhirSchemaPromise = this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
+    this.startTime = new Date();
     this.resource = null;
     this.id = null;
     this.sources = [];
+    this.fhirSchema = null;
+    this.rewriter = null
     this.dataParseTimer = null; // serves as a dirty bit
+    this.fhirEndpoint = 'http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/'; // e.g. Observation?code=8302-2
+  }
+
+  async init () {
+    this.fhirSchema = await this.loadFhirShEx("playground/FHIR-R5-ShEx.json");
+    delete this.fhirSchema['@context']; // breaks ShExVisitor
+    this.rewriter = new FhirSparql(this.fhirSchema);
+    this.onLoad();
     return this;
   }
 
@@ -49,6 +58,7 @@ class Playground {
   }
 
   setupEvents () {
+    // Left pane
     $('#data .format').on('change', evt => {
       try {
         const url = $('#data textarea').data('url');
@@ -73,14 +83,6 @@ class Playground {
       }
     });
 
-    $('#right select').on('change', evt => {
-      // Reveal one right pane depending on select.
-      $('#right select option').get().map(elt => {
-        const setMe = $('#right').find('.' + elt.value);
-        elt.selected ? setMe.show() : setMe.hide();
-      })
-    });
-
     $('#curSources').on('change', evt => {
       // swap the selected data file into the textarea
       if (this.dataParseTimer) {
@@ -100,6 +102,21 @@ class Playground {
 
       this.dataParseTimer = setTimeout(_ => this.reflectUpdatesToSources(), PARSE_TIMEOUT);
     });
+
+    // Right panel
+    const actionToTextarea = {
+      query: '.query',
+      validate: '.validate',
+      fhir: '.query',
+    }
+
+    $('#right select').on('change', evt => {
+      // Reveal one right pane depending on select.
+      for (const findMe of Object.values(actionToTextarea))
+        $('#right').find(findMe).hide();
+      $('#right').find(actionToTextarea[$('#right select option:selected').val()]).show();
+    });
+    $('#right .run').on('click', this.rightPaneRunHandler.bind(this))
   }
 
   reflectUpdatesToSources () {
@@ -165,7 +182,7 @@ class Playground {
               )
           );
         }
-      } else {
+      } else if (manifestKey in manifestEntry) {
         add(selector, manifestKey, base, manifestEntry[manifestKey]);
       }
     }
@@ -198,46 +215,55 @@ class Playground {
       const {data} = await this.genericManifestSelect(manifestEntry, base, {
         data: '#data textarea',
         dataFormat: '#data .format',
+        action: '#right .header select',
+        sparqlQuery: '#right textarea.query',
+        shexSchema: '#right textarea.validate',
         // sparqlQuery: '#right textarea.query',
       });
-      this.sources = data.map(({url, body}) => {
-        return {
-          label: this.makeLabel(url),
-          url,
-          body,
-          db: this.parseTurtle(url.href, body, manifestEntry.dataFormat),
-        };
-      } );
-      const nowShowing = $('#data textarea').data('url').href;
-      $('#curSources').empty().append(this.sources.map(src => $('<option/>', {value: src.url.href, selected: src.url.href === nowShowing}).text(src.label)));
-      console.assert(this.sources.find(source => source.url.href === $('#data textarea').data('url').href));
+      if (data) {
+        this.sources = data.map(({url, body}) => {
+          return {
+            label: this.makeLabel(url),
+            url,
+            body,
+            db: this.parseTurtle(url.href, body, manifestEntry.dataFormat),
+          };
+        } );
+        const nowShowing = $('#data textarea').data('url').href;
+        $('#curSources').empty().append(this.sources.map(src => $('<option/>', {value: src.url.href, selected: src.url.href === nowShowing}).text(src.label)));
+        console.assert(this.sources.find(source => source.url.href === $('#data textarea').data('url').href));
+      } else {
+        this.sources = null;
+      }
     } catch (e) {
       $('#text').addClass('error').append($('<pre/>').text(e?.stack || e?.message || e));
       return;
     }
-    try {
-      const textStuff = await this.expectOneQueryResult(`PREFIX fhir: <http://hl7.org/fhir/>
+
+    if (this.sources)
+      try {
+        const textStuff = await this.expectOneQueryResult(`PREFIX fhir: <http://hl7.org/fhir/>
 SELECT ?resource ?id ?div {
   ?resource fhir:nodeRole fhir:treeRoot ;
     fhir:id [ fhir:v ?id ] ;
     fhir:text [ fhir:div ?div ] }`);
-      if (textStuff) {
-        $('#text').get(0).innerHTML = textStuff.div.value;
-        this.resource = textStuff.resource;
-        this.id = textStuff.id;
+        if (textStuff) {
+          $('#text').get(0).innerHTML = textStuff.div.value;
+          this.resource = textStuff.resource;
+          this.id = textStuff.id;
+        }
+      } catch (e) {
+        $('#text').empty().append(
+          e instanceof TooFewResultsError
+            ? $('<p/>', {"class": "warning"}).text('no div in Resource')
+          : $('<p/>', {"class": "error"}).text(e.message)
+        );
       }
-    } catch (e) {
-      $('#text').empty().append(
-        e instanceof TooFewResultsError
-        ? $('<p/>', {"class": "warning"}).text('no div in Resource')
-        : $('<p/>', {"class": "error"}).text(e.message)
-      );
-    }
 
-    if (!!$('#right textarea:visible').val()) {
-      $('#right .run')
-        .on('click', this.rightPaneRunHandler.bind(this))
-    }
+    // if (!!$('#right textarea:visible').val()) {
+    //   $('#right .run')
+    //     .on('click', this.rightPaneRunHandler.bind(this))
+    // }
     if (manifestEntry.sparqlQueries) {
       this.paintManifest(manifestEntry.sparqlQueries, $('#right > .header'), this.queryManifestSelect.bind(this), base);
     }
@@ -250,11 +276,11 @@ SELECT ?resource ?id ?div {
       shexSchema: '#right textarea.validate',
     });
     $('#right select').change();
-    if (!!$('#right textarea:visible').val()) {
-      $('#right .run')
-        .off()
-        .on('click', this.rightPaneRunHandler.bind(this))
-    }
+    // if (!!$('#right textarea:visible').val()) {
+    //   $('#right .run')
+    //     .off()
+    //     .on('click', this.rightPaneRunHandler.bind(this))
+    // }
   }
 
   async getBody (url, what) {
@@ -307,6 +333,7 @@ SELECT ?resource ?id ?div {
       switch (reqStr) {
       case 'query': return await this.renderQueryResults(evt);
       case 'validate': return await this.renderValidationResults(evt);
+      case 'fhir': return await this.renderFhirResults(evt);
       default: throw Error(`unknown run request: ${reqStr}`);
       }
     } catch (e) {
@@ -320,6 +347,11 @@ SELECT ?resource ?id ?div {
 
   async renderQueryResults (evt) {
     // const db = await this.parseDataPane();
+    if (this.sources === null) {
+      $('#runResults').text('no data (so no results)');
+      return;
+    }
+
     const db = new N3.Store();// await this.parseDataPane();
     this.sources.forEach(src => db.addQuads(src.db.getQuads()));
     const startTime = new Date();
@@ -416,7 +448,85 @@ SELECT ?resource ?id ?div {
     console.log('Validation results:', res);
     statusElt.empty().append($('<pre/>', {"class": !!res.errors ? 'error' : 'success'}).text(JSON.stringify(res, null, 2)));
   }
+
+  async renderFhirResults (evt) {
+    const parserOpts = {
+      prefixes: undefined,
+      baseIRI: $('#right textarea.query').data('url'),
+      factory: N3.DataFactory,
+      skipValidation: false,
+      skipUngroupedVariableCheck: false,
+      pathOnly: false,
+    }
+    // const sparqlParser = new Stuff.SparqlParser(parserOpts);
+    // const iQuery = sparqlParser.parse($('#right textarea.query').val());
+    const iQuery = SparqlQuery.parse($('#right textarea.query').val(), parserOpts);
+    const {arcTrees, connectingVariables, referents} = this.rewriter.getArcTrees(iQuery);
+    console.log(Date.now(), {arcTrees, connectingVariables, referents});
+
+    this.sources = [];
+    $('#curSources').empty();
+    let results = [{}];
+    for (const arcTree of arcTrees) {
+      const newResults = [];
+      for (const result of results) {
+        // opBgpToFhirPathExecutions returns disjuncts
+        for (const fhirPathExecution of this.rewriter.opBgpToFhirPathExecutions(arcTree, referents, result)) {
+          // {name: 'code', value: 'http://loinc.org|72166-2'} -> code=http%3A%2F%2Floinc.org%7C72166-2
+          // const paths = fhirPathExecution.paths.map(qp => encodeURIComponent(qp.name) + '=' + encodeURIComponent(qp.value)).join('&') || '';
+          const searchUrl = new URL(fhirPathExecution.type, this.fhirEndpoint);
+          for (const {name, value} of fhirPathExecution.paths)
+            searchUrl.searchParams.set(name, value);
+          console.log(searchUrl.href);
+          // const urlStr = this.fhirEndpoint + fhirPathExecution.type + paths;
+          const resp = await fetch(searchUrl, { headers: { Accept: 'application/json+fhir' } });
+          const body = await resp.text();
+          if (!resp.ok)
+            throw Error(`Unable to fetch ${urlStr} at <${url}>:\n${body}`);
+          const bundle = JSON.parse(body);
+          /*
+            {
+            "resourceType": "Bundle", "id": "5183b131-5b14-47e3-84c6-2e0d398e10d3",
+            "meta": { "lastUpdated": "2023-11-07T16:38:22.656+00:00" }, "type": "searchset",
+            "link": [
+            { "relation": "self", "url": "./fhir/Observation?code=http%3A%2F%2Floinc.org%7C72166-2" },
+            { "relation": "next", "url": "./fhir?_getpages=518...0d3&_getpagesoffset=20&_count=20&_pretty=true&_bundletype=searchset" }
+            ],
+            "entry": [ {
+            "fullUrl": "./fhir/Observation/58157",
+            "resource": {
+            "resourceType": "Observation",
+            "id": "58157",
+            ... } } ] }
+          */
+          for (const {fullUrl, resource} of bundle.entry) {
+            // const xlator = new Stuff.FhirJsonToTurtle();
+            // const ttl = xlator.prettyPrint(resource);
+            const url = new URL(fullUrl);
+            const label = this.makeLabel(url);
+            const ttl = new Stuff.FhirJsonToTurtle().prettyPrint(resource);
+            const db = this.parseTurtle(fullUrl, ttl, 'Turtle');
+            $("#data .format").val('Turtle'); // yeah, sets multiple times. whatever
+            $('#data textarea').val(ttl);
+            const src = { label, url, body: ttl, db };
+            this.sources.push(src);
+            // $('#curSources').append($('<option/>', {value: src.url.href, selected: src.url.href === true}).text(src.label));
+            const sel = $('#curSources').get(0);
+            const opt = $('<option/>', {value: src.url.href, selected: src.url.href === true}).text(src.label).get(0);
+            sel.append(opt);
+            const queryStr = SparqlQuery.selectStar(arcTree.getBgp());console.log(queryStr);
+            const bindings = await this.executeQuery([db], queryStr);
+            Array.prototype.push(newResults, bindings);
+          }
+        }
+      }
+      results = newResults;
+    }
+
+    this.renderQueryResults(evt);
+  }
 }
 
-  const UI = new Playground();
-  UI.init();
+const playgroundInstance = new Playground();
+playgroundInstance.init();
+console.log('Playground:', playgroundInstance);

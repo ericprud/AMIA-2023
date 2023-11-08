@@ -48,7 +48,7 @@ const Rule_CodeWithSystem = new Rule(
     ]
   ]
 ]`,
-  (values) => values[0] + "|" + values[1]
+  (values) => values[1] + "|" + values[0]
 );
 const Rule_CodeWithOutSystem = new Rule(
   "code",

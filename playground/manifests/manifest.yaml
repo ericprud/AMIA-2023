@@ -97,6 +97,10 @@
     - DiagnosticReport/smoker-1_history_1924-11-23.ttl
   resourceType: Observation
   sparqlQueries:
+    - label: smoker-min
+      action: query
+      sparqlQueryURL: smoker-min.rq
+
     - label: smoker-coding
       action: query
       sparqlQueryURL: smoker-codings.rq
@@ -113,3 +117,18 @@
       action: query
       sparqlQueryURL: smoker-bind.rq
 
+- label: smokerz
+  dataFormat: -none-
+  sparqlQueries:
+    - label: smoking-status
+      action: fhir
+      sparqlQueryURL: obs-pat_tobacco-smoking-status.rq
+
+    - label: full query
+      action: fhir
+      sparqlQueryURL: smoker-min.rq
+
+- label: a smoker cohort
+  dataFormat: -none-
+  action: fhir
+  sparqlQueryURL: smoker-min.rq
