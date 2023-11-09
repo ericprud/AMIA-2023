@@ -3,12 +3,14 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 
 <../Patient/jim123> a fhir:Patient ;
   fhir:nodeRole fhir:treeRoot ;
-  fhir:id [ fhir:v "jim123"] ; # 
+  fhir:id [ fhir:v "jim123" ] ;
   fhir:identifier ( [
      fhir:use [ fhir:v "usual" ] ;
      fhir:type [
        fhir:coding ( [
-         fhir:system [ fhir:v "http://terminology.hl7.org/CodeSystem/v2-0203"^^xsd:anyURI ] ;
+         fhir:system [
+           fhir:v "http://terminology.hl7.org/CodeSystem/v2-0203"^^xsd:anyURI
+         ] ;
          fhir:code [ fhir:v "MR" ]
        ] )
      ] ;
@@ -21,7 +23,7 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
        fhir:display [ fhir:v "Acme Healthcare" ]
      ]
   ] ) ;
-  fhir:active [ fhir:v "true"^^xsd:boolean] ;
+  fhir:active [ fhir:v "true"^^xsd:boolean ] ;
   fhir:name ( [
      fhir:use [ fhir:v "official" ] ;
      fhir:family [ fhir:v "Chalmers" ] ;
@@ -30,18 +32,20 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
      fhir:use [ fhir:v "usual" ] ;
      fhir:given ( [ fhir:v "Jim" ] )
   ] [
-     fhir:use [ fhir:v "maiden" ] ; #    Maiden names apply for anyone whose name changes as a result of marriage - irrespective of gender   
+     fhir:use [ fhir:v "maiden" ] ;
      fhir:family [ fhir:v "Windsor" ] ;
      fhir:given ( [ fhir:v "Peter" ] [ fhir:v "James" ] ) ;
      fhir:period [
        fhir:end [ fhir:v "2002"^^xsd:gYear ]
      ]
   ] ) ;
-  fhir:gender [ fhir:v "male"] ; #     use FHIR code system for male / female    
+  fhir:gender [ fhir:v "male" ] ;
   fhir:birthDate [
      fhir:v "1974-12-25"^^xsd:date ;
      fhir:extension ( [
-       fhir:url [ fhir:v "http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI ] ;
+       fhir:url [
+         fhir:v "http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI
+       ] ;
        fhir:value [ fhir:v "1974-12-25T14:35:45-05:00"^^xsd:dateTime ]
      ] )
   ] ;

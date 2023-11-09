@@ -1,0 +1,14 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<../Patient/jim123> a fhir:Patient ;
+  fhir:id [ fhir:v "jim123" ] ;
+  fhir:name ( [
+     fhir:use [ fhir:v "official" ] ;
+     fhir:family [ fhir:v "Chalmers" ] ;
+     fhir:given ( [ fhir:v "Peter" ] [ fhir:v "James" ] )
+  ] [
+     fhir:use [ fhir:v "usual" ] ;
+     fhir:given ( [ fhir:v "Jim" ] )
+  ] ) ;
+.

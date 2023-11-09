@@ -1,0 +1,17 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+<../Patient/jim123> a fhir:Patient ;
+  fhir:id [
+    fhir:v "jim123" ;
+    fhir:extension ( [
+      fhir:url [
+        fhir:v "http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI
+      ] ;
+      fhir:value [ fhir:v "1974-12-25T14:35:45-05:00"^^xsd:dateTime ]
+    ] )
+  ] ;
+  fhir:birthDate [
+    fhir:v "1974-12-25"^^xsd:date
+  ] ;
+.

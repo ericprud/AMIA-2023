@@ -1,0 +1,75 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+<#Patient> EXTENDS @<#Element> {
+  a [fhir:Patient]?;
+  fhir:id @<#id>;
+  fhir:birthDate @<#date> ;
+}
+
+<#id> EXTENDS @<#Element> CLOSED {   
+  a [fhir:id]?;
+  fhir:v xsd:string ?;
+}  
+
+<#date> EXTENDS @<#Element> CLOSED {
+  fhir:v xsd:date OR xsd:gYearMonth OR xsd:gYear
+}
+
+<#Element> CLOSED {
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id @<#string>?;
+    fhir:extension @<#OneOrMore_Extension>?;
+}
+
+<#OneOrMore_Extension> CLOSED {
+    rdf:first @<#Extension>  ;
+    rdf:rest [rdf:nil] OR @<#OneOrMore_Extension> 
+}
+
+# Optional Extensions Element
+<#Extension> EXTENDS @<#Element> CLOSED {
+  a [fhir:Extension]?;
+  fhir:url @<#uri>; 
+  fhir:value
+    # ...
+    @<#dateTime> OR @<#string>
+    # OR ...
+      ?; 
+} AND (
+  {
+    fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI] };
+    fhir:value { fhir:v xsd:dateTime };
+  } OR {
+    fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/id-nhsId"^^xsd:anyURI] };
+    fhir:value { fhir:v /[0-9]* / };
+  } OR {
+    fhir:url { fhir:v NOT [
+      "http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI
+      "http://hl7.org/fhir/StructureDefinition/id-nhsId"^^xsd:anyURI
+      ]
+    }
+  }
+)
+
+<#code> EXTENDS @<#Element> CLOSED {
+    a [fhir:code]?;
+    fhir:v xsd:token OR xsd:string ?;
+}
+
+<#string> EXTENDS @<#Element> CLOSED {
+    a [fhir:string]?;
+    fhir:v xsd:string MAXLENGTH 1048576?;
+}
+
+<#dateTime> EXTENDS @<#Element> CLOSED {
+  a [fhir:dateTime]?;
+  fhir:v xsd:gYear OR xsd:gYearMonth OR xsd:date OR xsd:dateTime?;
+}
+
+<#uri> EXTENDS @<#Element> CLOSED {
+    a [fhir:uri]?;
+    fhir:v xsd:anyURI?;
+}  

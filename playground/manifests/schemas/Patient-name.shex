@@ -1,0 +1,46 @@
+PREFIX fhir: <http://hl7.org/fhir/>
+PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+<#Patient> {
+  fhir:id { fhir:v xsd:string };
+  fhir:name @<#OneOrMore_HumanName>?;
+}
+
+<#OneOrMore_HumanName> CLOSED {
+    rdf:first @<#HumanName>  ;
+    rdf:rest [rdf:nil] OR @<#OneOrMore_HumanName> 
+}
+
+<#HumanName> EXTENDS @<#Element> CLOSED {
+  a [fhir:HumanName]?;
+  fhir:use @<#code> AND
+    {fhir:v @fhirvs:name-use}?;
+  fhir:family @<#string>?;
+  fhir:given @<#OneOrMore_string>?;
+  fhir:prefix @<#OneOrMore_string>?;
+}  
+
+fhirvs:name-use ["usual" "official" "temp"
+    "nickname" "anonymous" "old" "maiden"]
+
+<#OneOrMore_string> CLOSED {
+    rdf:first @<#string>  ;
+    rdf:rest [rdf:nil] OR @<#OneOrMore_string> 
+}
+
+<#Element> CLOSED {
+  fhir:nodeRole [fhir:treeRoot]?;
+  fhir:id @<#string>?;
+}
+
+<#code> EXTENDS @<#Element> CLOSED {
+  a [fhir:code]?;
+  fhir:v xsd:token OR xsd:string ?;
+}
+
+<#string> EXTENDS @<#Element> CLOSED {
+  a [fhir:string]?;
+  fhir:v xsd:string MAXLENGTH 1048576?;
+}

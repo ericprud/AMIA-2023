@@ -1,24 +1,32 @@
 ---
 - schemaLabel: start
   schemaURL: schemas/Patient-start.shex
+  dataLabel: Jim start
+  dataURL: Patient/jim123-start.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: start
+  schemaURL: schemas/Patient-start.shex
   dataLabel: Jim
   dataURL: Patient/jim123.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
 
-- schemaLabel: "1"
+- schemaLabel: Patient 1
   schemaURL: schemas/Patient-1.shex
   dataLabel: Jim
-  dataURL: Patient/jim123.ttl
+  dataURL: Patient/jim123-start.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
 
-- schemaLabel: "2"
+- schemaLabel: Patient 2
   schemaURL: schemas/Patient-2.shex
   dataLabel: Jim
-  dataURL: Patient/jim123.ttl
+  dataURL: Patient/jim123-start.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
@@ -39,6 +47,147 @@
     <jim123>@<#Patient>
   status: conformant
 
+- schemaLabel: rdf lists
+  schemaURL: schemas/Patient-name.shex
+  dataLabel: Jim
+  dataURL: Patient/jim123-name.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+# extensions
+- schemaLabel: extensions
+  schemaURL: schemas/Patient-extension-any.shex
+  dataLabel: good ol' Jim
+  dataURL: Patient/jim123-birthDateTime.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: extensions
+  schemaURL: schemas/Patient-extension-any.shex
+  dataLabel: dateTime on id
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extensions
+  schemaURL: schemas/Patient-extension-any.shex
+  dataLabel: dateTime on root
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extensions
+  schemaURL: schemas/Patient-extension-any.shex
+  dataLabel: dateTime typo
+  dataURL: Patient/jim123-birthDateTime-typo.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+# birth dateTime
+- schemaLabel: extension - birth dateTime
+  schemaURL: schemas/Patient-extension-birthDateTime.shex
+  dataLabel: good ol' Jim
+  dataURL: Patient/jim123-birthDateTime.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: extension - birth dateTime
+  schemaURL: schemas/Patient-extension-birthDateTime.shex
+  dataLabel: dateTime on id
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extension - birth dateTime
+  schemaURL: schemas/Patient-extension-birthDateTime.shex
+  dataLabel: dateTime on root
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extension - birth dateTime
+  schemaURL: schemas/Patient-extension-birthDateTime.shex
+  dataLabel: dateTime typo
+  dataURL: Patient/jim123-birthDateTime-typo.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+# with usage context
+- schemaLabel: extension with usage context
+  schemaURL: schemas/Patient-extension-context.shex
+  dataLabel: good ol' Jim
+  dataURL: Patient/jim123-birthDateTime.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: extension with usage context
+  schemaURL: schemas/Patient-extension-context.shex
+  dataLabel: dateTime on id
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extension with usage context
+  schemaURL: schemas/Patient-extension-context.shex
+  dataLabel: dateTime on root
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: extension with usage context
+  schemaURL: schemas/Patient-extension-context.shex
+  dataLabel: dateTime typo
+  dataURL: Patient/jim123-birthDateTime-typo.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+# prescribed extensions
+- schemaLabel: prescribed extensions
+  schemaURL: schemas/Patient-prescribed-extensions.shex
+  dataLabel: good ol' Jim
+  dataURL: Patient/jim123-birthDateTime.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: conformant
+
+- schemaLabel: prescribed extensions
+  schemaURL: schemas/Patient-prescribed-extensions.shex
+  dataLabel: dateTime on id
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: prescribed extensions
+  schemaURL: schemas/Patient-prescribed-extensions.shex
+  dataLabel: dateTime on root
+  dataURL: Patient/jim123-birthDateTime-on-id.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+- schemaLabel: prescribed extensions
+  schemaURL: schemas/Patient-prescribed-extensions.shex
+  dataLabel: dateTime typo
+  dataURL: Patient/jim123-birthDateTime-typo.ttl
+  queryMap: |
+    <jim123>@<#Patient>
+  status: nonconformant
+
+# all features
 - schemaLabel: final
   schemaURL: schemas/Patient-final.shex
   dataLabel: Jim
@@ -46,4 +195,3 @@
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
-

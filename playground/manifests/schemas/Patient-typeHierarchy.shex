@@ -32,8 +32,8 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 # Base for all elements
 <#Element> EXTENDS @<#Base> CLOSED {
     fhir:nodeRole [fhir:treeRoot]?;
-    fhir:id @<#string>?;                     # Unique id for inter-element referencing 
-#   fhir:extension @<OneOrMore_Extension>?;  # Additional content defined by implementations 
+    fhir:id @<#string>?;
+#   fhir:extension @<OneOrMore_Extension>?;
 }
 
 # Reuseable Types

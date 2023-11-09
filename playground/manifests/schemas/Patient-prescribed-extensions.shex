@@ -6,13 +6,22 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 <#Patient> EXTENDS @<#Element> {
   a [fhir:Patient]?;
   fhir:id @<#id>;
-  fhir:active @<#boolean>? ;
-  fhir:gender @<#gender>? ;
   fhir:birthDate @<#date> ;
 }
 
-<#gender> @<#code> AND {
-  fhir:v @fhirvs:administrative-gender
+<#id> EXTENDS @<#Element> CLOSED {   
+  a [fhir:id]?;
+  fhir:v xsd:string ?;
+}  
+
+<#date> EXTENDS @<#Element> CLOSED {
+  fhir:v xsd:date OR xsd:gYearMonth OR xsd:gYear
+}
+
+<#Element> CLOSED {
+    fhir:nodeRole [fhir:treeRoot]?;
+    fhir:id @<#string>?;
+    fhir:extension @<#OneOrMore_Extension>?;
 }
 
 <#OneOrMore_Extension> CLOSED {
@@ -27,18 +36,11 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 } AND (
   { fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI] };
     fhir:value { fhir:v xsd:dateTime };
-  # ^rdf:first { ^fhir:extension { ^fhir:birthDate { a [fhir:Patient] } } };
     ^rdf:first @<#In_Patient_birthDate_extension>;
   } OR
   { fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/id-nhsId"^^xsd:anyURI] };
     fhir:value { fhir:v /[0-9]* / };
     ^fhir:extension @<#In_Patient_id_extension>;
-  } OR
-  { fhir:url { fhir:v NOT [
-      "http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI
-      "http://hl7.org/fhir/StructureDefinition/id-nhsId"^^xsd:anyURI
-      ]
-    }
   }
 )
 
@@ -50,51 +52,22 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
      { ^fhir:extension { ^fhir:id { a [fhir:Patient] } } }
   OR { ^rdf:rest @<#In_Patient_id_extension> }
 
-# Primitive Type boolean
-<#boolean> EXTENDS @<#Element> {
-  fhir:v ["true" "false"]
-}
-
-# Primitive Union Type id
-<#id> EXTENDS @<#Element> CLOSED {   
-  a [fhir:id]?;
-  fhir:v xsd:string ?;
-}  
-
-# Primitive Union Type date
-<#date> EXTENDS @<#Element> {
-  fhir:v xsd:date OR xsd:gYearMonth OR xsd:gYear
-}
-
-# Base for all elements
-<#Element> CLOSED {
-    fhir:nodeRole [fhir:treeRoot]?;
-    fhir:id @<#string>?;
-    fhir:extension @<#OneOrMore_Extension>?;
-}
-
-# Primitive Type code
 <#code> EXTENDS @<#Element> CLOSED {
     a [fhir:code]?;
     fhir:v xsd:token OR xsd:string ?;
 }
 
-# Primitive Type string
 <#string> EXTENDS @<#Element> CLOSED {
     a [fhir:string]?;
     fhir:v xsd:string MAXLENGTH 1048576?;
 }
-
-# Primitive Type uri
-<#uri> EXTENDS @<#Element> CLOSED {
-    a [fhir:uri]?;
-    fhir:v xsd:anyURI?;
-}  
 
 <#dateTime> EXTENDS @<#Element> CLOSED {
   a [fhir:dateTime]?;
   fhir:v xsd:gYear OR xsd:gYearMonth OR xsd:date OR xsd:dateTime?;
 }
 
-# The gender of a person used for administrative purposes.
-fhirvs:administrative-gender ["male" "female" "other" "unknown"]
+<#uri> EXTENDS @<#Element> CLOSED {
+    a [fhir:uri]?;
+    fhir:v xsd:anyURI?;
+}  
