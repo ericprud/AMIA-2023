@@ -1,8 +1,20 @@
 ---
-- schemaLabel: smoker
-  schemaURL: smokerFHIRShExMap.shex
+
+- schemaLabel: idealized smoker
+  schemaURL: schemas/smokerIMShExMap-flat.shex
   dataLabel: a smoker
-  dataURL: Observation/smoker-1_smoking-2023-06-20.ttl
+  dataURL: IM-smoker-1.ttl
+  queryMap: "{FOCUS a im:Patient}@<#Patient>"
+  outputSchemaURL: schemas/smokerCDSShExMap.shex
+  outputShape: "<#CDSSmokingAssessment>"
+  staticVars: {}
+  createRoot: <DAMSmokingAssessment>
+  status: conformant
+
+- schemaLabel: easy parts of smoker
+  schemaURL: schemas/smokerFHIRShExMap-flat.shex
+  dataLabel: a smoker
+  dataURL: Observation/smoker-1_smoking-2023-06-20-toy.ttl
   queryMap: "{FOCUS fhir:nodeRole fhir:treeRoot}@<#FHIRSmokingAssessment>"
   outputSchemaURL: ../smokerCDSShExMap.shex
   outputShape: "<#CDSSmokingAssessment>"
@@ -10,10 +22,10 @@
   createRoot: <DAMSmokingAssessment>
   status: conformant
 
-- schemaLabel: smoker-toy
-  schemaURL: smokerFHIRShExMap-toy.shex
+- schemaLabel: difficult smoker
+  schemaURL: schemas/smokerFHIRShExMap.shex
   dataLabel: a smoker
-  dataURL: Observation/smoker-1_smoking-2023-06-20-toy.ttl
+  dataURL: Observation/smoker-1_smoking-2023-06-20.ttl
   queryMap: "{FOCUS fhir:nodeRole fhir:treeRoot}@<#FHIRSmokingAssessment>"
   outputSchemaURL: ../smokerCDSShExMap.shex
   outputShape: "<#CDSSmokingAssessment>"

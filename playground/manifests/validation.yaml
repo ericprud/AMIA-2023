@@ -1,16 +1,16 @@
 ---
 - schemaLabel: start
   schemaURL: schemas/Patient-start.shex
-  dataLabel: Jim start
-  dataURL: Patient/jim123-start.ttl
+  dataLabel: Jim
+  dataURL: Patient/jim123.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
 
 - schemaLabel: start
   schemaURL: schemas/Patient-start.shex
-  dataLabel: Jim
-  dataURL: Patient/jim123.ttl
+  dataLabel: Jim start
+  dataURL: Patient/jim123-start.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
@@ -31,10 +31,11 @@
     <jim123>@<#Patient>
   status: conformant
 
+# hierachy
 - schemaLabel: type hierarchy
   schemaURL: schemas/Patient-typeHierarchy.shex
   dataLabel: Jim
-  dataURL: Patient/jim123.ttl
+  dataURL: Patient/jim123-start.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
@@ -42,11 +43,12 @@
 - schemaLabel: flattened hierarchy
   schemaURL: schemas/Patient-flattenedHierarchy.shex
   dataLabel: Jim
-  dataURL: Patient/jim123.ttl
+  dataURL: Patient/jim123-start.ttl
   queryMap: |
     <jim123>@<#Patient>
   status: conformant
 
+# lists
 - schemaLabel: rdf lists
   schemaURL: schemas/Patient-name.shex
   dataLabel: Jim

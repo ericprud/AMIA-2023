@@ -27,11 +27,10 @@ PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 } AND (
   { fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/patient-birthTime"^^xsd:anyURI] };
     fhir:value { fhir:v xsd:dateTime };
-  # ^rdf:first { ^fhir:extension { ^fhir:birthDate { a [fhir:Patient] } } };
     ^rdf:first @<#In_Patient_birthDate_extension>;
   } OR
   { fhir:url { fhir:v ["http://hl7.org/fhir/StructureDefinition/id-nhsId"^^xsd:anyURI] };
-    fhir:value { fhir:v /[0-9]* / };
+    fhir:value { fhir:v /^[0-9]*$/ };
     ^fhir:extension @<#In_Patient_id_extension>;
   } OR
   { fhir:url { fhir:v NOT [

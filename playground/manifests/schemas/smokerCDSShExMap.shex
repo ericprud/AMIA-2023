@@ -1,0 +1,15 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX my: <http://my.example/>
+PREFIX Map: <http://shex.io/extensions/Map/#>
+PREFIX    t: <http://a.example/>
+
+<#CDSSmokingAssessment> {
+
+    a [my:CDSSmokingAssessment];
+    my:observation . %Map:{ t:obsId %};
+    my:subject . %Map:{ t:patient %};
+    my:packYears . %Map:{ t:packYears %};
+    my:smokingYears . %Map:{ t:smokingYears %};
+    my:packsPerDay . %Map:{ t:packsPerDay %};
+    my:dateQuit . ? %Map:{ t:dateQuit %};
+}

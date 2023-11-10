@@ -33,6 +33,7 @@ fhirvs:name-use ["usual" "official" "temp"
 <#Element> CLOSED {
   fhir:nodeRole [fhir:treeRoot]?;
   fhir:id @<#string>?;
+# fhir:extension @<OneOrMore_Extension>?;
 }
 
 <#code> EXTENDS @<#Element> CLOSED {
