@@ -1,0 +1,12 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX my: <http://my.example/>
+PREFIX Map: <http://shex.io/extensions/Map/#>
+PREFIX t: <http://a.example/>
+
+<DAMSmokingAssessment> a my:CDSSmokingAssessment;
+  my:observation <assessment-2>;
+  my:subject <smoker-1>;
+  my:packYears "7"^^xsd:decimal;
+  my:smokingYears "31"^^xsd:decimal;
+  my:packsPerDay 0.25;
+  my:dateQuit "2014-07-07T00:14:15-07:00"^^xsd:dateTime.

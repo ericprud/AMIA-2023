@@ -11,6 +11,28 @@
   createRoot: <DAMSmokingAssessment>
   status: conformant
 
+- schemaLabel: idealized smoker reversed
+  schemaURL: schemas/smokerCDSShExMap.shex
+  dataLabel: a smoker
+  dataURL: CDS-smoker-1.ttl
+  queryMap: "{FOCUS a my:CDSSmokingAssessment}@<#CDSSmokingAssessment>"
+  outputSchemaURL: schemas/smokerIMShExMap-flat.shex
+  outputShape: "<#Patient>"
+  staticVars: {}
+  createRoot: <smoker-1>
+  status: conformant
+
+- schemaLabel: idealized, reverse arc
+  schemaURL: schemas/smokerIMShExMap-clustered.shex
+  dataLabel: a smoker
+  dataURL: IM-smoker-1.ttl
+  queryMap: "{FOCUS a im:Patient}@<#Patient>"
+  outputSchemaURL: schemas/smokerCDSShExMap.shex
+  outputShape: "<#CDSSmokingAssessment>"
+  staticVars: {}
+  createRoot: <DAMSmokingAssessment>
+  status: conformant
+
 - schemaLabel: easy parts of smoker
   schemaURL: schemas/smokerFHIRShExMap-flat.shex
   dataLabel: a smoker

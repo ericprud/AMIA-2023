@@ -1,0 +1,17 @@
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX Map: <http://shex.io/extensions/Map/#>
+PREFIX im: <http://im.example/>
+PREFIX t: <http://a.example/>
+
+<#Patient> {
+  a [im:Patient];
+  im:assessment @<#assessment> %Map:{ t:obsId %};
+}                              %Map:{ t:patient %}
+
+<#assessment> {
+  a [im:SmokingAssessment];
+  im:packYears xsd:decimal     %Map:{ t:packYears %};
+  im:yearsSmoked xsd:decimal   %Map:{ t:smokingYears %};
+  im:packsPerDay xsd:decimal   %Map:{ t:packsPerDay %};
+  im:lastIntake xsd:dateTime   %Map:{ t:dateQuit %};
+}
