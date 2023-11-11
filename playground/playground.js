@@ -5,7 +5,7 @@ const MANIFEST = {
 const PARSE_TIMEOUT = 400; // wait after keystroke before re-parsing data
 
 import {FhirSparql} from './fhir-sparql/src/FhirSparql.js';
-import {SparqlQuery} from './fhir-sparql/src/RdfUtils';
+import {SparqlQuery} from './fhir-sparql/src/RdfUtils.js';
 
 class TooFewResultsError extends Error {}
 class TooManyResultsError extends Error {}
