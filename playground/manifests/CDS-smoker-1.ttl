@@ -6,6 +6,7 @@ PREFIX t: <http://a.example/>
 <DAMSmokingAssessment> a my:CDSSmokingAssessment;
   my:observation <assessment-2>;
   my:subject <smoker-1>;
+  my:name "Alice, Walker";
   my:packYears "7"^^xsd:decimal;
   my:smokingYears "31"^^xsd:decimal;
   my:packsPerDay 0.25;

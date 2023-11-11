@@ -8,6 +8,7 @@ PREFIX    t: <http://a.example/>
     a [my:CDSSmokingAssessment];
     my:observation . %Map:{ t:obsId %};
     my:subject . %Map:{ t:patient %};
+    my:name . %Map:{ regex(/(?<t:family>[a-zA-Z]+), (?<t:given>[a-zA-Z]+)/) %};
     my:packYears . %Map:{ t:packYears %};
     my:smokingYears . %Map:{ t:smokingYears %};
     my:packsPerDay . %Map:{ t:packsPerDay %};

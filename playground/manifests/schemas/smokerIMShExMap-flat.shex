@@ -5,6 +5,8 @@ PREFIX t: <http://a.example/>
 
 <#Patient> {
   a [im:Patient];
+  im:familyName xsd:string     %Map:{ t:family %};
+  im:givenName xsd:string      %Map:{ t:given %};
   im:assessment @<#assessment> %Map:{ t:obsId %};
 }                              %Map:{ t:patient %}
 

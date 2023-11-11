@@ -4,6 +4,8 @@ PREFIX Map: <http://shex.io/extensions/Map/#>
 PREFIX t: <http://a.example/>
 
 <smoker-1> a im:Patient;
+  im:familyName "Alice";
+  im:givenName "Walker";
   im:assessment <assessment-2>.
 
 <assessment-2> a im:SmokingAssessment;
