@@ -15,4 +15,4 @@ PREFIX t: <http://a.example/>
   im:yearsSmoked xsd:decimal   %Map:{ t:smokingYears %};
   im:packsPerDay xsd:decimal   %Map:{ t:packsPerDay %};
   im:lastIntake xsd:dateTime   %Map:{ t:dateQuit %};
-}                              %Map:{ t:obsId %};
+}                              %Map:{ t:obsId %}

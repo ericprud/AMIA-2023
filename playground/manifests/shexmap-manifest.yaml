@@ -5,14 +5,14 @@
   dataLabel: a smoker
   dataURL: IM-smoker-1.ttl
   queryMap: "{FOCUS a im:Patient}@<#Patient>"
-  outputSchemaURL: schemas/smokerCDSShExMap.shex
+  outputSchemaURL: schemas/smokerCDSShExMap-regex.shex
   outputShape: "<#CDSSmokingAssessment>"
   staticVars: {}
   createRoot: <DAMSmokingAssessment>
   status: conformant
 
 - schemaLabel: idealized smoker reversed
-  schemaURL: schemas/smokerCDSShExMap.shex
+  schemaURL: schemas/smokerCDSShExMap-regex.shex
   dataLabel: a smoker
   dataURL: CDS-smoker-1.ttl
   queryMap: "{FOCUS a my:CDSSmokingAssessment}@<#CDSSmokingAssessment>"
@@ -53,56 +53,5 @@
   outputShape: "<#CDSSmokingAssessment>"
   staticVars: {}
   createRoot: <DAMSmokingAssessment>
-  status: conformant
-
-- schemaLabel: symmetric
-  schema: |
-    PREFIX    : <http://a.example/>
-    PREFIX schema: <http://schema.org/>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX Map: <http://shex.io/extensions/Map/#>
-
-    start=@<Concert>
-
-    <Concert> {
-      schema:bandName xsd:string %Map:{ :Name %} ;
-      schema:tix IRI %Map:{ :TicketUrl %} ;
-      schema:venue @<Venue>
-    }
-    <Venue> {
-      schema:location xsd:string %Map:{ :LocationName %} ;
-      schema:address  xsd:string %Map:{ :LocationAddress %}
-    }
-  dataLabel: Non-IRI
-  data: |
-    PREFIX schema: <http://schema.org/>
-
-    [] schema:bandName "B.B. King";
-      schema:tix "https://www.etix.com/ticket/1771656";
-      schema:venue [
-        schema:location "Lupo’s Heartbreak Hotel";
-        schema:address "79 Washington St...."
-      ] .
-  queryMap: _:b0@START
-  outputSchema: |
-    PREFIX    : <http://a.example/>
-    PREFIX schema: <http://schema.org/>
-    PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
-    PREFIX Map: <http://shex.io/extensions/Map/#>
-
-    start=@<Concert>
-
-    <Concert> {
-      schema:bandName xsd:string %Map:{ :Name %} ;
-      schema:tix IRI %Map:{ :TicketUrl %} ;
-      schema:venue @<Venue>
-    }
-    <Venue> {
-      schema:location xsd:string %Map:{ :LocationName %} ;
-      schema:address  xsd:string %Map:{ :LocationAddress %}
-    }
-  outputShape: "<Concert>"
-  staticVars: "{}"
-  createRoot: _:root
   status: conformant
 
