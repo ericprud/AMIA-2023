@@ -37,11 +37,11 @@
 
     - label: validate as Patient
       action: validate
-      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
+      shexSchemaURL: //fhircat.github.io/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
 
     - label: validate as Observation
       action: validate
-      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
+      shexSchemaURL: //fhircat.github.io/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
 
 - label: Patient (R5) JSON
   dataFormat: JSON
@@ -81,11 +81,11 @@
 
     - label: validate as Patient
       action: validate
-      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
+      shexSchemaURL: //fhircat.github.io/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Patient.shex
 
     - label: validate as Observation
       action: validate
-      shexSchemaURL: ../../../../fhircat/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
+      shexSchemaURL: //fhircat.github.io/ShExValidation/fhir_rdf_validation/ShExSchemas/R5/Observation.shex
 
 - label: a smoker
   dataFormat: Turtle
@@ -104,18 +104,6 @@
     - label: smoker-coding
       action: query
       sparqlQueryURL: smoker-codings.rq
-
-    - label: smoker
-      action: query
-      sparqlQueryURL: smoker-1filter.rq
-
-    - label: smoker-filter
-      action: query
-      sparqlQueryURL: smoker-filter.rq
-
-    - label: smoker-bind
-      action: query
-      sparqlQueryURL: smoker-bind.rq
 
 - label: smokerz
   dataFormat: -none-
