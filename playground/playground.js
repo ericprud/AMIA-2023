@@ -20,7 +20,8 @@ class Playground {
     this.fhirSchema = null;
     this.rewriter = null
     this.dataParseTimer = null; // serves as a dirty bit
-    this.fhirEndpoint = 'http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/'; // e.g. Observation?code=8302-2
+    // this.fhirEndpoint = 'http://ec2-54-241-145-243.us-west-1.compute.amazonaws.com:8080/hapi/fhir/'; // e.g. Observation?code=8302-2
+    this.fhirEndpoint = 'http://localhost:8080/hapi/fhir/'; // e.g. Observation?code=8302-2
   }
 
   async init () {

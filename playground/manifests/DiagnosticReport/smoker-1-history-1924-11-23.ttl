@@ -5,9 +5,9 @@ PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
 PREFIX fhirshex: <http://hl7.org/fhir/shape/>
 PREFIX fhirvs: <http://hl7.org/fhir/ValueSet/>
 # was 57582
-<smoker-1_history_1924-11-23> a fhir:DiagnosticReport;
+<smoker-1-history-1924-11-23> a fhir:DiagnosticReport;
   fhir:nodeRole fhir:treeRoot;
-  fhir:Resource.id [ fhir:v "smoker-1_history_1924-11-23" ];
+  fhir:Resource.id [ fhir:v "smoker-1-history-1924-11-23" ];
   fhir:DiagnosticReport.status [ fhir:v "final" ];
   fhir:DiagnosticReport.code [
     fhir:CodeableConcept.coding ( [
